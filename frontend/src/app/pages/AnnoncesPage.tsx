@@ -10,13 +10,28 @@ export default function AnnoncesPage() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Tous');
 
-  const annonces = [
+  const INITIAL_ANNONCES = [
     { id: 1, title: t('annonce_1_title'), date: '2026-05-15', category: 'Concours', description: t('annonce_1_desc') },
     { id: 2, title: t('annonce_2_title'), date: '2026-05-10', category: 'Résultats', description: t('annonce_2_desc') },
     { id: 3, title: 'Avis de report d\'examen', date: '2026-05-05', category: 'Avis', description: 'L\'examen d\'aptitude professionnelle prévu le 10 mai est reporté à une date ultérieure.' },
     { id: 4, title: 'Résultats définitifs - Architecte', date: '2026-04-28', category: 'Résultats', description: 'Publication de la liste principale et la liste d\'attente pour le concours d\'architecte 1er grade.' },
     { id: 5, title: 'Concours de recrutement de techniciens', date: '2026-04-20', category: 'Concours', description: 'Ouverture des inscriptions pour le concours de techniciens de 3ème grade spécialité génie civil.' },
   ];
+
+  const [annonces, setAnnonces] = useState(INITIAL_ANNONCES);
+
+  React.useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem('annonces') || '[]');
+    if (stored.length > 0) {
+      // Avoid duplicates by checking titles (simple way)
+      const initialTitles = new Set(INITIAL_ANNONCES.map(a => a.title));
+      const filteredStored = stored.filter((a: any) => !initialTitles.has(a.title)).map((a: any) => ({
+        ...a,
+        category: a.category || 'Avis'
+      }));
+      setAnnonces([...filteredStored, ...INITIAL_ANNONCES]);
+    }
+  }, []);
 
   const categories = ['Tous', 'Concours', 'Résultats', 'Avis'];
 

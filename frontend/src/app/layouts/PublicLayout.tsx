@@ -7,7 +7,7 @@ import { Button } from '../components/ui/button';
 import { isAuthenticated, getStoredUser } from '../lib/api';
 import { useTranslation } from '../i18n';
 import { cn } from '../lib/utils';
-import logoImg from '../../assets/logo.png';
+import logoImg from '../../assets/logo-commune.png';
 
 export function PublicLayout() {
   const navigate = useNavigate();
@@ -157,28 +157,28 @@ export function PublicLayout() {
           <div className="mt-16 pt-12 border-t border-slate-800">
             <h4 className="text-white font-bold mb-8 uppercase tracking-wider text-xs">{t('liensUtiles')}</h4>
             <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-y-4 gap-x-6 text-sm">
-              <li><FooterLink to="#">{t('link_commune')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_presidence')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_sessions')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_appels')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_projets')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_consultation')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_ville')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_jardins')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_transport')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_sport')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_entrepreneuriat')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_sante')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_visite')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_associatif')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_commune_ligne')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_bureau_ordre')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_chikaya')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_allo_mouatine')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_watiqa')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_rokhas')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_marches')}</FooterLink></li>
-              <li><FooterLink to="#">{t('link_chafafiya')}</FooterLink></li>
+              <li><FooterLink to="/commune">{t('link_commune')}</FooterLink></li>
+              <li><FooterLink to="/presidence">{t('link_presidence')}</FooterLink></li>
+              <li><FooterLink to="/sessions">{t('link_sessions')}</FooterLink></li>
+              <li><FooterLink to="/appels-offre">{t('link_appels')}</FooterLink></li>
+              <li><FooterLink to="/projets">{t('link_projets')}</FooterLink></li>
+              <li><FooterLink to="/consultation">{t('link_consultation')}</FooterLink></li>
+              <li><FooterLink to="/ville">{t('link_ville')}</FooterLink></li>
+              <li><FooterLink to="/jardins">{t('link_jardins')}</FooterLink></li>
+              <li><FooterLink to="/transport">{t('link_transport')}</FooterLink></li>
+              <li><FooterLink to="/sport">{t('link_sport')}</FooterLink></li>
+              <li><FooterLink to="/entreprenariat">{t('link_entrepreneuriat')}</FooterLink></li>
+              <li><FooterLink to="/sante">{t('link_sante')}</FooterLink></li>
+              <li><FooterLink to="/visite">{t('link_visite')}</FooterLink></li>
+              <li><FooterLink to="/associative">{t('link_associatif')}</FooterLink></li>
+              <li><FooterLink to="/commune-en-ligne">{t('link_commune_ligne')}</FooterLink></li>
+              <li><FooterLink to="/bureau-digital">{t('link_bureau_ordre')}</FooterLink></li>
+              <li><FooterLink to="/chikaya">{t('link_chikaya')}</FooterLink></li>
+              <li><FooterLink to="/allo-mouatine">{t('link_allo_mouatine')}</FooterLink></li>
+              <li><FooterLink to="/watiqa">{t('link_watiqa')}</FooterLink></li>
+              <li><FooterLink to="/rokhas">{t('link_rokhas')}</FooterLink></li>
+              <li><FooterLink to="/marches-publics">{t('link_marches')}</FooterLink></li>
+              <li><FooterLink to="/chafafiya">{t('link_chafafiya')}</FooterLink></li>
             </ul>
           </div>
 

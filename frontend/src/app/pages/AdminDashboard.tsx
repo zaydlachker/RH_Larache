@@ -130,28 +130,11 @@ export default function AdminDashboard() {
       // Update Annonce
       const updatedAnnonces = annonces.map(a => a.id === editingId ? { ...a, ...newAnnonce } : a);
       setAnnonces(updatedAnnonces);
-      
-      // Sync with Actualités: Update existing or add if missing
-      const updatedActualites = actualites.map(actu => 
-        (actu.annonceId === editingId) ? { ...actu, title: newAnnonce.title, content: newAnnonce.description } : actu
-      );
-      setActualites(updatedActualites);
-      
       setEditingId(null);
     } else {
       const id = Date.now();
       const item = { id, ...newAnnonce, date: new Date().toISOString().split('T')[0], status: 'Publié' };
       setAnnonces([item, ...annonces]);
-      
-      // Auto-add to Actualités
-      const actuItem = {
-        id: Date.now() + 1,
-        annonceId: id, // Link to source
-        title: newAnnonce.title,
-        content: newAnnonce.description,
-        date: new Date().toISOString().split('T')[0]
-      };
-      setActualites([actuItem, ...actualites]);
     }
     setNewAnnonce({ title: '', description: '' });
   };

@@ -23,6 +23,7 @@ import { Badge } from '../components/ui/badge';
 import { concoursApi, isAuthenticated } from '../lib/api';
 import { useTranslation } from '../i18n';
 import laracheImg from '../../assets/larache-hero.png';
+import mainLogo from '../../assets/logo-commune.png';
 
 interface ApiConcours {
   id: number;
@@ -314,7 +315,7 @@ export function PublicPortal() {
         </div>
       </section>
 
-      {/* HCM Resources Section */}
+      {/* Official Documents Section */}
       <section className="bg-slate-50 dark:bg-slate-950 py-24 border-t border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center max-w-3xl mx-auto">
@@ -322,68 +323,43 @@ export function PublicPortal() {
             <div className="h-1.5 w-20 bg-blue-600 mx-auto rounded-full mb-6"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Group 1: Human Resources */}
-            <Card className="border-none shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-slate-900">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl text-blue-600 dark:text-blue-400">{t('hr_title')}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <ResourceLink title="Oracle Advanced HCM Controls" />
-                <ResourceLink title="Oracle Cloud HCM Analytics" />
-                <ResourceLink title="Oracle HR" />
-              </CardContent>
-            </Card>
-
-            {/* Group 2: HelpDesk */}
-            <Card className="border-none shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-slate-900">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl text-blue-600 dark:text-blue-400">{t('traduction_officielle')}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <ResourceLink
-                  title="BO_5382_bis_fr.pdf"
-                  hasPdf
-                  href="https://www.sgg.gov.ma/BO/bo_fr/2005/bo_5382-bis_fr.pdf"
-                  target="_blank"
-                />
-              </CardContent>
-            </Card>
-
-            {/* Group 3: Talent Management */}
-            <Card className="border-none shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-slate-900">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl text-blue-600 dark:text-blue-400">{t('talent_management')}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <ResourceLink title="Oracle Dynamic Skills" />
-                <ResourceLink title="Oracle Learning" />
-                <ResourceLink title="Oracle Recruiting" />
-                <ResourceLink title="Oracle Performance Management" />
-              </CardContent>
-            </Card>
-
-            {/* Group 4: Workforce Management */}
-            <Card className="border-none shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-slate-900">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl text-blue-600 dark:text-blue-400">{t('workforce_management')}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <ResourceLink title="Oracle Absence Management" />
-                <ResourceLink title="Oracle Time and Labor" />
-                <ResourceLink title="Oracle Workforce Health and Safety" hasPdf />
-              </CardContent>
-            </Card>
-
-            {/* Group 5: Payroll */}
-            <Card className="border-none shadow-sm hover:shadow-md transition-shadow bg-white dark:bg-slate-900 md:col-span-2 lg:col-span-1">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl text-blue-600 dark:text-blue-400">{t('payroll')}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <ResourceLink title="Oracle Payroll" />
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <DocumentCard
+              title={t('doc_budget_title')}
+              desc={t('doc_budget_desc')}
+              icon={<FileText className="h-6 w-6 text-red-500" />}
+              href="https://www.sgg.gov.ma/BO/bo_ar/2005/BO_5379_AR.pdf"
+            />
+            <DocumentCard
+              title={t('doc_rapport_title')}
+              desc={t('doc_rapport_desc')}
+              icon={<FileText className="h-6 w-6 text-blue-500" />}
+              href="https://www.sgg.gov.ma/BO/bo_ar/2006/BO_5394_AR.pdf"
+            />
+            <DocumentCard
+              title={t('doc_plan_title')}
+              desc={t('doc_plan_desc')}
+              icon={<FileText className="h-6 w-6 text-emerald-500" />}
+              href="https://www.sgg.gov.ma/BO/bo_ar/1999/BO_4736_AR.pdf"
+            />
+            <DocumentCard
+              title={t('doc_reglement_title')}
+              desc={t('doc_reglement_desc')}
+              icon={<FileText className="h-6 w-6 text-amber-500" />}
+              href="https://www.sgg.gov.ma/BO/bo_ar/2005/BO_5379_AR.pdf"
+            />
+            <DocumentCard
+              title={t('doc_rapport_2025_title')}
+              desc={t('doc_rapport_2025_desc')}
+              icon={<FileText className="h-6 w-6 text-indigo-500" />}
+              href="https://www.sante.gov.ma/sites/Ar/reglementation/DocLib13/%D9%85%D8%B1%D8%B3%D9%88%D9%85%20%D8%B1%D9%82%D9%85%202.17.535%20(2017)%20%D9%84%D9%84%D9%86%D8%B8%D8%A7%D9%85%20%D8%A7%D9%84%D8%A7%D8%B3%D8%A7%D8%B3%D9%8A%20%D8%A7%D9%84%D8%AE%D8%A7%D8%B5%20%D8%A8%D8%A7%D9%84%D9%85%D9%85%D8%B1%D8%B6%D9%8A%D9%86%20%D9%88%D8%AA%D9%82%D9%86%D9%8A%D9%8A%20%D9%88%D8%B2%D8%A7%D8%B1%D8%A9%20%D8%A7%D9%84%D8%B5%D8%AD%D8%A9.pdf"
+            />
+            <DocumentCard
+              title={t('doc_plan_strat_title')}
+              desc={t('doc_plan_strat_desc')}
+              icon={<FileText className="h-6 w-6 text-cyan-500" />}
+              href="https://www.sgg.gov.ma/BO/bo_ar/1999/BO_4736_AR.pdf"
+            />
           </div>
         </div>
       </section>
@@ -403,14 +379,32 @@ function FeatureCard({ icon, title, desc }: { icon: React.ReactNode, title: stri
   );
 }
 
-function ResourceLink({ title, hasPdf = false, href = "#", target }: { title: string, hasPdf?: boolean, href?: string, target?: string }) {
+function DocumentCard({ title, desc, icon, href }: { title: string, desc: string, icon: React.ReactNode, href?: string }) {
+  const { t } = useTranslation();
   return (
-    <a href={href} target={target} rel={target === "_blank" ? "noopener noreferrer" : undefined} className="flex items-center justify-between group p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
-      <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 pr-2">{title}</span>
-      <div className="flex items-center shrink-0">
-        {hasPdf && <Badge variant="outline" className="mr-2 text-[10px] uppercase bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:border-red-800">PDF</Badge>}
-        <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-transform group-hover:translate-x-1" />
-      </div>
-    </a>
+    <Card className="flex flex-col h-full border-none shadow-sm hover:shadow-xl transition-all duration-300 bg-white dark:bg-slate-900 group overflow-hidden">
+      <div className="h-1 bg-slate-100 dark:bg-slate-800 group-hover:bg-blue-500 transition-colors" />
+      <CardHeader className="pb-4">
+        <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 w-fit mb-4 group-hover:scale-110 transition-transform">
+          {icon}
+        </div>
+        <CardTitle className="text-lg text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          {title}
+        </CardTitle>
+        <CardDescription className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mt-2">
+          {desc}
+        </CardDescription>
+      </CardHeader>
+      <CardFooter className="mt-auto pt-4 pb-6">
+        <Button 
+          variant="outline" 
+          className="w-full border-slate-200 dark:border-slate-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all rounded-xl group/btn"
+          onClick={() => href && window.open(href, '_blank')}
+        >
+          <FileText className="h-4 w-4 mr-2 text-red-500 group-hover/btn:text-white transition-colors" />
+          <span className="font-semibold">{t('download_pdf')}</span>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

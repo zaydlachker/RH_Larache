@@ -10,7 +10,7 @@ export default function ActualitesPage() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Tous');
 
-  const actualites = [
+  const INITIAL_ACTUALITES = [
     { 
       id: 1, 
       title: t('actu_1_title') || 'Inauguration du nouveau centre', 
@@ -52,6 +52,22 @@ export default function ActualitesPage() {
       image: 'https://images.unsplash.com/photo-1584362917165-526a968579e8?q=80&w=800&auto=format&fit=crop' 
     },
   ];
+
+  const [actualites, setActualites] = useState(INITIAL_ACTUALITES);
+
+  React.useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem('actualites') || '[]');
+    if (stored.length > 0) {
+      const initialTitles = new Set(INITIAL_ACTUALITES.map(a => a.title));
+      const filteredStored = stored.filter((a: any) => !initialTitles.has(a.title)).map((a: any) => ({
+        ...a,
+        description: a.content || a.description,
+        category: a.category || 'RH',
+        image: a.image || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop'
+      }));
+      setActualites([...filteredStored, ...INITIAL_ACTUALITES]);
+    }
+  }, []);
 
   const categories = ['Tous', 'RH', 'Santé', 'Projets'];
 
