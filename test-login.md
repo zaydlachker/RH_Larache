@@ -3,6 +3,9 @@
 - Email: admin@gmail.com
 - Password: admin000
 
+Email: president@gmail.com
+Password: president000
+
 Purpose:
 - Use these credentials ONLY for development/testing purposes.
 - These credentials should allow access to the admin dashboard in the current local environment.

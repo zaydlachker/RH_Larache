@@ -328,19 +328,19 @@ export function PublicPortal() {
               title={t('doc_budget_title')}
               desc={t('doc_budget_desc')}
               icon={<FileText className="h-6 w-6 text-red-500" />}
-              href="https://www.sgg.gov.ma/BO/bo_ar/2005/BO_5379_AR.pdf"
+              href="https://www.sgg.gov.ma/BO/bo_ar/2015/BO_6380_Ar.pdf"
             />
             <DocumentCard
               title={t('doc_rapport_title')}
               desc={t('doc_rapport_desc')}
               icon={<FileText className="h-6 w-6 text-blue-500" />}
-              href="https://www.sgg.gov.ma/BO/bo_ar/2006/BO_5394_AR.pdf"
+              href="https://www.mmsp.gov.ma/sites/default/files/2024-09/SGFP_09092024_Fr.pdf"
             />
             <DocumentCard
               title={t('doc_plan_title')}
               desc={t('doc_plan_desc')}
               icon={<FileText className="h-6 w-6 text-emerald-500" />}
-              href="https://www.sgg.gov.ma/BO/bo_ar/1999/BO_4736_AR.pdf"
+              href="https://www.mmsp.gov.ma/sites/default/files/2022-05/decret_2_11_621.pdf"
             />
             <DocumentCard
               title={t('doc_reglement_title')}

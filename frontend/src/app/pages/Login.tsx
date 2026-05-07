@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Landmark, Loader2, Mail, Lock, User, ArrowRight, ChevronLeft } from 'lucide-react';
+import { Landmark, Loader2, Mail, Lock, User, ArrowRight, ChevronLeft, GraduationCap } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -110,7 +110,9 @@ export function Login() {
 
         // Standardized production redirects
         if (finalRole === 'fonctionnaire') {
-          navigate('/fonctionnaire', { replace: true });
+          navigate('/dashboard/fonctionnaire', { replace: true });
+        } else if (finalRole === 'stagiaire') {
+          navigate('/dashboard/stagiaire', { replace: true });
         } else if (finalRole === 'admin') {
           navigate('/admin', { replace: true });
         } else {
@@ -319,11 +321,12 @@ export function Login() {
               type="button"
               variant="outline"
               className="w-full h-11 rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-bold transition-all"
-              onClick={() => navigate('/login/fonctionnaire')}
+              onClick={() => navigate('/selecte')}
             >
               <Landmark className="h-4 w-4 mr-2" />
-              Connexion - fonctionnaire
+              Accès Fonctionnaire
             </Button>
+
 
             <Button
               type="button"
@@ -331,7 +334,7 @@ export function Login() {
               className={isAdminMode
                 ? "w-full h-11 rounded-xl border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                 : "w-full h-11 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-all shadow-lg shadow-red-600/20"}
-              onClick={() => { setIsAdminMode(!isAdminMode); navigate('/login/admin'); }}
+              onClick={() => { setIsAdminMode(!isAdminMode); navigate('/selecteadmin'); }}
             >
               {isAdminMode ? t('return_candidate') : t('admin_btn')}
             </Button>

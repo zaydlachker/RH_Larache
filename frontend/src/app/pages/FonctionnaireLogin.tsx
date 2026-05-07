@@ -5,6 +5,7 @@ import { Label } from '../components/ui/label';
 import { Button } from '../components/ui/button';
 import { Landmark, Lock, Mail, Loader2, ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { saveAuth } from '../lib/api';
 
 export default function FonctionnaireLogin() {
   const navigate = useNavigate();
@@ -24,14 +25,13 @@ export default function FonctionnaireLogin() {
 
     if (existingUser) {
       // Allow access and set session
-      localStorage.setItem("user", JSON.stringify({
-        ...existingUser,
-        role: "fonctionnaire" // Override/Set role for this session
-      }));
-      localStorage.setItem("token", "fonc_demo_token");
-      navigate('/fonctionnaire', { replace: true });
+      saveAuth({
+        user: { ...existingUser, role: "fonctionnaire" },
+        token: "fonc_demo_token"
+      });
+      navigate('/dashboard/fonctionnaire', { replace: true });
     } else {
-      setError("Compte non trouvé. Veuillez créer un compte.");
+      setError("Compte non trouvé. Veuillez contacter l'administration.");
     }
     
     setIsLoading(false);

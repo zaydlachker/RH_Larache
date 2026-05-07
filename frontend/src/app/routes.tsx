@@ -1,5 +1,5 @@
 import React from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { PublicLayout } from './layouts/PublicLayout';
 import { PublicPortal } from './pages/PublicPortal';
 import ConcoursPage from './pages/Concours';
@@ -13,6 +13,12 @@ import { StaticPage } from './pages/StaticPage';
 import AdminDashboard from './pages/AdminDashboard';
 import FonctionnaireDashboard from './pages/FonctionnaireDashboard';
 import FonctionnaireLogin from './pages/FonctionnaireLogin';
+import StagiaireLogin from './pages/StagiaireLogin';
+import StagiaireDashboard from './pages/StagiaireDashboard';
+import SelectPage from './pages/SelectPage';
+import SelectAdminPage from './pages/SelectAdminPage';
+import PresidentLogin from './pages/PresidentLogin';
+import PresidentDashboard from './pages/PresidentDashboard';
 
 export const router = createBrowserRouter([
   {
@@ -54,20 +60,56 @@ export const router = createBrowserRouter([
     element: <AdminDashboard />,
   },
   {
-    path: '/fonctionnaire',
+    path: '/president',
+    element: <PresidentDashboard />,
+  },
+  {
+    path: '/dashboard/fonctionnaire',
     element: <FonctionnaireDashboard />,
+  },
+  {
+    path: '/dashboard/stagiaire',
+    element: <StagiaireDashboard />,
+  },
+  {
+    path: '/selecte',
+    element: <SelectPage />,
   },
   {
     path: '/login/fonctionnaire',
     element: <FonctionnaireLogin />,
   },
   {
-    path: '/login',
-    element: <Login />,
+    path: '/login/stagiaire',
+    element: <StagiaireLogin />,
+  },
+  {
+    path: '/login/stagiere',
+    element: <Navigate to="/login/stagiaire" replace />,
+  },
+  {
+    path: '/fonctionnaire',
+    element: <Navigate to="/login/fonctionnaire" replace />,
+  },
+  {
+    path: '/stagiaire',
+    element: <Navigate to="/login/stagiaire" replace />,
+  },
+  {
+    path: '/selecteadmin',
+    element: <SelectAdminPage />,
   },
   {
     path: '/login/admin',
     element: <AdminLogin />,
+  },
+  {
+    path: '/login/president',
+    element: <PresidentLogin />,
+  },
+  {
+    path: '/login',
+    element: <Login />,
   },
   {
     path: '/register',

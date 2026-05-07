@@ -55,16 +55,28 @@ export function CandidatureForm() {
     setError(null);
 
     try {
-      // Mock API call
-      const form = new FormData();
-      form.append('name', name);
-      form.append('email', email);
-      if (documents.demand) form.append('demand', documents.demand);
-      if (documents.cv) form.append('cv', documents.cv);
-      if (documents.cin) form.append('cin', documents.cin);
-      if (documents.diplome) form.append('diplome', documents.diplome);
-      if (documents.casier) form.append('casier', documents.casier);
-      if (id) form.append('concours_id', id);
+      // Helper to convert file to Base64
+      const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = error => reject(error);
+        });
+      };
+
+      const attachedDocs: any = {};
+      
+      // Process all documents
+      for (const [key, file] of Object.entries(documents)) {
+        if (file) {
+          attachedDocs[key] = {
+            name: file.name,
+            type: file.type,
+            content: await fileToBase64(file)
+          };
+        }
+      }
 
       // Save to localStorage for Admin
       const newCandidature = {
@@ -74,7 +86,8 @@ export function CandidatureForm() {
         name,
         email,
         message: userMessage,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        documents: attachedDocs
       };
       
       const existing = JSON.parse(localStorage.getItem('candidatures') || '[]');

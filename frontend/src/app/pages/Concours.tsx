@@ -70,11 +70,36 @@ export default function ConcoursPage() {
       try {
         setLoading(true);
         setError('');
-        const data = await concoursApi.getAll();
+        
+        // 1. Fetch from API (backend source)
+        const apiData = await concoursApi.getAll().catch(err => {
+          console.warn('Backend concours fetch failed, falling back to empty list', err);
+          return [];
+        });
+
+        // 2. Load from LocalStorage (admin-created source)
+        const storedStr = localStorage.getItem('concours');
+        const storedData = storedStr ? JSON.parse(storedStr) : [];
+        
+        // Map stored data to match ApiConcours structure if necessary
+        const mappedStored = storedData.map((c: any) => ({
+          ...c,
+          exam_date: c.exam_date || c.date || new Date().toISOString(),
+          status: c.status || 'open',
+          application_deadline: c.application_deadline || '',
+          max_participants: c.max_participants || 0
+        }));
+
         if (!mounted) return;
-        setConcours(data);
+
+        // 3. Merge both sources (ensure unique IDs)
+        const combinedMap = new Map();
+        mappedStored.forEach((c: any) => combinedMap.set(c.id, c));
+        apiData.forEach((c: any) => combinedMap.set(c.id, c));
+        
+        setConcours(Array.from(combinedMap.values()));
       } catch (e) {
-        console.error(e);
+        console.error('Error in load:', e);
         setError(t('error_load_concours'));
       } finally {
         if (mounted) setLoading(false);

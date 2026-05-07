@@ -43,7 +43,7 @@ export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [loading, setLoading] = useState(false);
 
-  // Strict route check: Only allow rendering on /admin
+  // Strict route check: Only allow rendering on authorized admin path
   if (location.pathname !== '/admin') {
     return null;
   }
@@ -62,6 +62,9 @@ export default function AdminDashboard() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [concours, setConcours] = useState<any[]>([]);
   const [newConcours, setNewConcours] = useState({ title: '', description: '', date: '' });
+  const [arretes, setArretes] = useState<any[]>([]);
+  const [newArrete, setNewArrete] = useState({ title: '', description: '' });
+  const [selectedType, setSelectedType] = useState('notation');
 
   // Load from localStorage
   useEffect(() => {
@@ -182,6 +185,41 @@ export default function AdminDashboard() {
     setNewConcours({ title: '', description: '', date: '' });
   };
 
+  const saveArrete = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newArrete.title) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/generate/${selectedType}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: newArrete.title,
+          description: newArrete.description,
+        }),
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      }
+    } catch (error) {
+      console.error('PDF generation error:', error);
+    }
+
+    const item = { id: Date.now(), ...newArrete, type: selectedType };
+    setArretes([item, ...arretes]);
+    setNewArrete({ title: '', description: '' });
+  };
+
+  const deleteArrete = (id: number) => {
+    if (!window.confirm('Supprimer cet arrete ?')) return;
+    setArretes(arretes.filter(a => a.id !== id));
+  };
+
   const deleteConcours = (id: number) => {
     if (!window.confirm('Supprimer ce concours ?')) return;
     const updated = concours.filter(c => c.id !== id);
@@ -263,6 +301,7 @@ export default function AdminDashboard() {
           <SidebarItem id="candidatures" label="Candidatures" icon={FileText} />
           <SidebarItem id="requests" label="User Requests" icon={UserPlus} />
           <SidebarItem id="actualites" label="Actualités" icon={FileText} />
+          <SidebarItem id="Arretes" label="Arretes" icon={FileText} />
           <SidebarItem id="users" label="Users" icon={Users} />
           <button
             onClick={() => setActiveSection('notifications')}
@@ -307,6 +346,7 @@ export default function AdminDashboard() {
                 {activeSection === 'actualites' && "Publiez des actualités pour informer les citoyens."}
                 {activeSection === 'users' && "Gérez les comptes utilisateurs et leurs permissions."}
                 {activeSection === 'requests' && "Passez en revue les demandes d'inscription des candidats."}
+                {activeSection === 'Arretes' && "Gérez les arrêtés municipaux et administratifs."}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -430,7 +470,7 @@ export default function AdminDashboard() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="bg-slate-50/50 text-[10px] uppercase font-black text-slate-400">
-                    <tr><th className="px-6 py-4">Candidat</th><th className="px-6 py-4">Concours</th><th className="px-6 py-4">Message</th><th className="px-6 py-4">Date</th><th className="px-6 py-4 text-right">Actions</th></tr>
+                    <tr><th className="px-6 py-4">Candidat</th><th className="px-6 py-4">Concours</th><th className="px-6 py-4">Documents</th><th className="px-6 py-4">Message</th><th className="px-6 py-4">Date</th><th className="px-6 py-4 text-right">Actions</th></tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
                     {candidatures.map(c => (
@@ -440,6 +480,27 @@ export default function AdminDashboard() {
                           <p className="text-[11px] text-slate-500">{c.email}</p>
                         </td>
                         <td className="px-6 py-6"><Badge variant="outline" className="text-blue-600 bg-blue-50 border-blue-100">{c.concoursTitle} (ID: {c.concoursId})</Badge></td>
+                        <td className="px-6 py-6">
+                          <div className="flex flex-wrap gap-2">
+                            {c.documents ? Object.entries(c.documents).map(([key, doc]: [string, any]) => (
+                              <Button 
+                                key={key} 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 text-[9px] px-2 rounded-lg border-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200"
+                                onClick={() => {
+                                  const link = document.createElement('a');
+                                  link.href = doc.content;
+                                  link.download = doc.name;
+                                  link.click();
+                                }}
+                              >
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                {key.toUpperCase()}
+                              </Button>
+                            )) : <span className="text-[10px] text-slate-400">Aucun document</span>}
+                          </div>
+                        </td>
                         <td className="px-6 py-6 text-sm text-slate-500 max-w-xs truncate">{c.message || '—'}</td>
                         <td className="px-6 py-6 text-xs text-slate-400">{new Date(c.date).toLocaleDateString()}</td>
                         <td className="px-6 py-6 text-right"><Button variant="ghost" size="icon" onClick={() => deleteCandidature(c.id)} className="text-red-400 hover:text-red-600"><Trash2 className="h-4 w-4" /></Button></td>
@@ -577,6 +638,88 @@ export default function AdminDashboard() {
                 {notifications.length === 0 && <div className="p-20 text-center text-slate-400 italic">Aucune notification système.</div>}
               </div>
             </Card>
+          )}
+          {activeSection === 'Arretes' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+              <Card className="border-none shadow-lg rounded-2xl bg-white dark:bg-slate-900 lg:sticky lg:top-8">
+                <form onSubmit={saveArrete}>
+                  <CardHeader><CardTitle>Gestion des arretes</CardTitle></CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Type d'arrêté</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {[
+                          { label: 'Titulaire', value: 'arrete_titularisation' },
+                          { label: 'Recrutement', value: 'arrete_recruter' },
+                          { label: 'Reclassement', value: 'arrete_reclassement' },
+                          { label: 'Evaluation', value: 'arrete_nomination' },
+                          { label: 'Avancement', value: 'arrete_avancement' },
+                          { label: 'Notation', value: 'notation' },
+                        ].map((t) => (
+                          <Button
+                            key={t.value}
+                            type="button"
+                            variant={selectedType === t.value ? 'default' : 'outline'}
+                            className={`text-[10px] h-8 rounded-lg transition-all ${selectedType === t.value ? 'bg-blue-600 shadow-sm' : 'hover:border-blue-500 hover:text-blue-600'}`}
+                            onClick={() => setSelectedType(t.value)}
+                          >
+                            {t.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Titre</Label>
+                      <Input value={newArrete.title} onChange={e => setNewArrete({...newArrete, title: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <textarea 
+                        className="w-full min-h-[120px] rounded-xl border border-slate-200 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                        value={newArrete.description} 
+                        onChange={e => setNewArrete({...newArrete, description: e.target.value})} 
+                      />
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Ajouter</Button>
+                  </CardFooter>
+                </form>
+              </Card>
+              <Card className="lg:col-span-2 border-none shadow-sm rounded-2xl bg-white dark:bg-slate-900 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead className="bg-slate-50/50 text-[10px] uppercase font-black text-slate-400">
+                      <tr>
+                        <th className="px-6 py-4">Titre</th>
+                        <th className="px-6 py-4">Description</th>
+                        <th className="px-6 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {arretes.map(a => (
+                        <tr key={a.id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-6 py-6 font-bold text-sm text-slate-900 dark:text-white">{a.title}</td>
+                          <td className="px-6 py-6 text-sm text-slate-500">{a.description}</td>
+                          <td className="px-6 py-6 text-right">
+                            <Button variant="ghost" size="icon" onClick={() => deleteArrete(a.id)} className="text-red-400 hover:text-red-600">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                      {arretes.length === 0 && (
+                        <tr>
+                          <td colSpan={3} className="p-20 text-center text-slate-400 italic">
+                            Aucun arrete enregistré.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </div>
           )}
         </div>
       </main>

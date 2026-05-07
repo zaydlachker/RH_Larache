@@ -41,7 +41,7 @@ export default function FonctionnaireDashboard() {
 
   useEffect(() => {
     if (!user || user.role !== 'fonctionnaire') {
-      navigate('/login/fonctionnaire', { replace: true });
+      navigate('/fonctionnaire', { replace: true });
     }
   }, [user, navigate]);
 
