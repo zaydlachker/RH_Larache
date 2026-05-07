@@ -175,6 +175,17 @@ export const notificationApi = {
   },
 };
 
+export const fonctionnaireApi = {
+  create: async (data: any): Promise<any> => {
+    const response = await api.post('/fonctionnaires', data);
+    return response.data;
+  },
+  getAll: async (): Promise<any[]> => {
+    const response = await api.get('/fonctionnaires');
+    return response.data;
+  }
+};
+
 export const saveAuth = (response: AuthResponse): void => {
   localStorage.setItem('token', response.token);
   localStorage.setItem('user', JSON.stringify(response.user));

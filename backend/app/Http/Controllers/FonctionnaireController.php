@@ -38,17 +38,44 @@ class FonctionnaireController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
             'matricule' => 'required|string|unique:fonctionnaires,matricule',
+            'statut' => 'required|string',
+            'grade' => 'required|string',
+            'echelle' => 'required|string',
+            'echelon' => 'required|string',
+            'anciennete' => 'required|string',
+            'cin' => 'required|string',
+            'phone' => 'required|string',
+            'date_naissance' => 'required|date',
+            'lieu_naissance' => 'required|string',
+            'nationalite' => 'required|string',
+            'diplome' => 'required|string',
             'department' => 'required|string|max:255',
-            'position' => 'required|string|max:255',
+            'position' => 'nullable|string|max:255',
             'hire_date' => 'required|date',
             'salary' => 'nullable|numeric|min:0',
         ]);
 
-        $fonctionnaire = Fonctionnaire::create($validated);
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            $user = \App\Models\User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+                'role' => 'fonctionnaire',
+            ]);
 
-        return response()->json($fonctionnaire->load('user'), 201);
+            $fonctionnaireData = array_merge($validated, [
+                'user_id' => $user->id,
+                'position' => $validated['position'] ?? $validated['grade']
+            ]);
+            
+            $fonctionnaire = Fonctionnaire::create($fonctionnaireData);
+
+            return response()->json($fonctionnaire->load('user'), 201);
+        });
     }
 
     /**

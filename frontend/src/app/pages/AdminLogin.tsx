@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Button } from '../components/ui/button';
-import { authApi, saveAuth } from '../lib/api';
+import { authApi, saveAuth, getStoredUser, isAuthenticated } from '../lib/api';
 import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -13,28 +14,46 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Proactive redirection if already logged in as admin
+  useEffect(() => {
+    const user = getStoredUser();
+    if (isAuthenticated() && user) {
+      const role = String(user.role).toLowerCase().trim();
+      if (role === 'admin' || role === 'administrateur') {
+        navigate('/admin', { replace: true });
+      }
+    }
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
-    if (email === "admin@gmail.com" && password === "admin000") {
-      // Save to localStorage
-      localStorage.setItem("user", JSON.stringify({
-        email: "admin@gmail.com",
-        role: "admin"
-      }));
+    try {
+      // Use the real authentication API to get a valid Sanctum token
+      const response = await authApi.login(email, password);
       
-      // Setting a dummy token to satisfy the app's authentication check and API interceptors
-      localStorage.setItem("token", "admin_hardcoded_session");
+      // Get the role from the response and sanitize it
+      const rawRole = response?.user?.role || response?.data?.user?.role || 'candidat';
+      const finalRole = String(rawRole).trim().toLowerCase();
+      
+      if (finalRole !== 'admin' && finalRole !== 'administrateur') {
+        setError("Accès refusé : Ce compte n'a pas les droits administrateur.");
+        setIsLoading(false);
+        return;
+      }
 
+      // Save authentication data (token + user info) to localStorage
+      saveAuth(response);
+      
       // Redirect to /admin
       navigate('/admin', { replace: true });
-    } else {
-      setError("Invalid admin credentials");
+    } catch (err: any) {
+      console.error('Admin login error:', err);
+      setError(err.response?.data?.message || "Identifiants administrateur invalides");
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   return (

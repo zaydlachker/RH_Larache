@@ -9,7 +9,9 @@ class ActeAdministratif extends Model
 {
     protected $fillable = [
         'candidat_id',
+        'fonctionnaire_id',
         'type',
+        'data',
         'reference',
         'file_path',
         'issue_date',
@@ -17,9 +19,19 @@ class ActeAdministratif extends Model
         'description',
     ];
 
+    protected $casts = [
+        'data' => 'array',
+        'issue_date' => 'datetime',
+    ];
+
     public function candidat(): BelongsTo
     {
         return $this->belongsTo(Candidat::class);
+    }
+
+    public function fonctionnaire(): BelongsTo
+    {
+        return $this->belongsTo(Fonctionnaire::class);
     }
 
     public function generator(): BelongsTo

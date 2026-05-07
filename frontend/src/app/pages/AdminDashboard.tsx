@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, Briefcase, FileText, BarChart, Settings, Bell, 
   Search, Plus, Filter, ArrowUpRight, TrendingUp, Clock, Loader2, Trash2, Edit, Check, X, LogOut, LayoutDashboard,
-  Megaphone, Activity, UserPlus, MoreVertical, ExternalLink, Calendar, Mail, Shield, ChevronRight, UserCheck, UserX
+  Megaphone, Activity, UserPlus, MoreVertical, ExternalLink, Calendar, Mail, Shield, ChevronRight, UserCheck, UserX, Lock, User
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -10,14 +10,16 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { Separator } from '../components/ui/separator';
 import { useTranslation } from '../i18n';
+import { concoursApi, fonctionnaireApi, getStoredUser, isAuthenticated, authApi } from '../lib/api';
 
 // --- MOCK DATA ---
 const INITIAL_USERS = [
-  { id: 1, name: 'Admin Principal', email: 'admin@gmail.com', role: 'Administrateur', avatar: 'AD', status: 'accepted' },
-  { id: 2, name: 'Sami Alami', email: 'sami.alami@larache.ma', role: 'Candidat', avatar: 'SA', status: 'accepted' },
-  { id: 3, name: 'Nadia Benani', email: 'nadia.b@larache.ma', role: 'Candidat', avatar: 'NB', status: 'accepted' },
-  { id: 4, name: 'Karim Tazi', email: 'k.tazi@gmail.com', role: 'Candidat', avatar: 'KT', status: 'accepted' },
+  { id: 1, name: 'Admin Principal', email: 'admin@gmail.com', role: 'Administrateur', avatar: 'AD', status: 'accepted', matricule: 'ADMIN01', cin: 'L123456', grade: 'Administrateur Principal', service: 'RH', date_recrutement: '2020-01-01', birth_date: '1985-05-15', lieu_naissance: 'Larache', telephone: '0612345678', situation_familiale: 'Marié(e)' },
+  { id: 2, name: 'Sami Alami', email: 'sami.alami@larache.ma', role: 'Candidat', avatar: 'SA', status: 'accepted', matricule: 'MAT882', cin: 'L99201', grade: 'Technicien 3ème grade', service: 'Travaux', date_recrutement: '2022-03-12', birth_date: '1992-11-20', lieu_naissance: 'Tanger', telephone: '0687654321', situation_familiale: 'Célibataire' },
+  { id: 3, name: 'Nadia Benani', email: 'nadia.b@larache.ma', role: 'Candidat', avatar: 'NB', status: 'accepted', matricule: 'MAT443', cin: 'L77382', grade: 'Adjoint Administratif 2ème grade', service: 'Finances', date_recrutement: '2021-06-25', birth_date: '1990-02-10', lieu_naissance: 'Ksar El Kebir', telephone: '0655443322', situation_familiale: 'Marié(e)' },
+  { id: 4, name: 'Karim Tazi', email: 'k.tazi@gmail.com', role: 'Candidat', avatar: 'KT', status: 'accepted', matricule: 'MAT112', cin: 'L11029', grade: 'Ingénieur d\'Etat 1er grade', service: 'SI', date_recrutement: '2023-01-10', birth_date: '1995-07-05', lieu_naissance: 'Larache', telephone: '0600112233', situation_familiale: 'Célibataire' },
 ];
 
 const INITIAL_ANNONCES = [
@@ -43,6 +45,23 @@ export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [loading, setLoading] = useState(false);
 
+  // AUTH PROTECTION
+  useEffect(() => {
+    const user = getStoredUser();
+    const isAuth = isAuthenticated();
+    
+    if (!isAuth || !user) {
+      navigate('/login/admin', { replace: true });
+      return;
+    }
+
+    const role = String(user.role).toLowerCase().trim();
+    if (role !== 'admin' && role !== 'administrateur') {
+      navigate('/login/admin', { replace: true });
+      return;
+    }
+  }, [navigate]);
+
   // Strict route check: Only allow rendering on authorized admin path
   if (location.pathname !== '/admin') {
     return null;
@@ -62,9 +81,43 @@ export default function AdminDashboard() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [concours, setConcours] = useState<any[]>([]);
   const [newConcours, setNewConcours] = useState({ title: '', description: '', date: '' });
+  const [newFonctionnaire, setNewFonctionnaire] = useState({
+    name: '',
+    email: '',
+    password: 'password123',
+    matricule: '',
+    statut: 'Titulaire',
+    grade: '',
+    echelle: '',
+    echelon: '',
+    anciennete: '',
+    cin: '',
+    phone: '',
+    date_naissance: '',
+    lieu_naissance: '',
+    nationalite: 'Marocaine',
+    diplome: '',
+    department: '',
+    position: '',
+    hire_date: new Date().toISOString().split('T')[0],
+    salary: ''
+  });
   const [arretes, setArretes] = useState<any[]>([]);
-  const [newArrete, setNewArrete] = useState({ title: '', description: '' });
-  const [selectedType, setSelectedType] = useState('notation');
+  const [newArrete, setNewArrete] = useState({ 
+    title: '', 
+    description: '', 
+    employeeId: '', 
+    data: { 
+      new_grade: '', 
+      date_effet: '', 
+      echelon: '', 
+      indice: '', 
+      reference: '',
+      diplome: '',
+      specialite: ''
+    } 
+  });
+  const [selectedType, setSelectedType] = useState('arrete_avancement');
 
   // Load from localStorage
   useEffect(() => {
@@ -88,11 +141,69 @@ export default function AdminDashboard() {
     const storedActualites = JSON.parse(localStorage.getItem('actualites') || '[]');
     if (storedActualites.length > 0) setActualites(storedActualites);
 
-    const storedConcours = JSON.parse(localStorage.getItem('concours') || '[]');
-    setConcours(storedConcours);
+    const fetchAllConcours = async () => {
+      try {
+        const localConcoursRaw = localStorage.getItem('concours');
+        const localConcours = localConcoursRaw ? JSON.parse(localConcoursRaw) : [];
+        
+        let apiConcours: any[] = [];
+        try {
+          apiConcours = await concoursApi.getAll();
+        } catch (e) {
+          console.warn('API Concours unavailable, using local only');
+        }
+
+        // Merge and deduplicate by ID
+        const merged = [...localConcours];
+        apiConcours.forEach(ac => {
+          if (!merged.find(lc => lc.id === ac.id)) {
+            merged.push({
+              id: ac.id,
+              title: ac.title,
+              description: ac.description,
+              date: ac.exam_date || ac.date
+            });
+          }
+        });
+        setConcours(merged);
+      } catch (err) {
+        console.error('Failed to sync concours:', err);
+      }
+    };
+    fetchAllConcours();
 
     const storedCandidatures = JSON.parse(localStorage.getItem('candidatures') || '[]');
     setCandidatures(storedCandidatures);
+
+    // Fetch real data from backend
+    fetch('http://localhost:8000/arretes')
+      .then(res => res.json())
+      .then(data => setArretes(data))
+      .catch(err => console.error('Error fetching arretes:', err));
+
+    const fetchFonctionnaires = async () => {
+      try {
+        const data = await fonctionnaireApi.getAll();
+        if (data && data.length > 0) {
+          const mapped = data.map((f: any) => ({
+            id: f.id,
+            name: f.user.name,
+            email: f.user.email,
+            matricule: f.matricule,
+            grade: f.position || f.grade,
+            service: f.department,
+            role: 'Fonctionnaire'
+          }));
+          setUsers(prev => {
+            const others = prev.filter(u => u.role !== 'Fonctionnaire');
+            return [...others, ...mapped];
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching fonctionnaires:', err);
+      }
+    };
+    fetchFonctionnaires();
   }, []);
 
   // Sync users to localStorage
@@ -118,10 +229,20 @@ export default function AdminDashboard() {
     localStorage.setItem('actualites', JSON.stringify(actualites));
   }, [actualites]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    navigate('/login/admin');
+  // Sync arretes to localStorage
+  useEffect(() => {
+    localStorage.setItem('arretes', JSON.stringify(arretes));
+  }, [arretes]);
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch (e) {
+      console.error('Logout error:', e);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    }
+    navigate('/login/admin', { replace: true });
   };
 
   // --- HANDLERS ---
@@ -167,52 +288,116 @@ export default function AdminDashboard() {
     setNewUser({ name: '', email: '', role: 'Candidat' });
   };
 
+  const saveFonctionnaire = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFonctionnaire.email || !newFonctionnaire.matricule) return;
+
+    try {
+      const data = await fonctionnaireApi.create(newFonctionnaire);
+      
+      const avatar = newFonctionnaire.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+      const newUserObj = {
+        id: data.user_id || Date.now(),
+        name: newFonctionnaire.name,
+        email: newFonctionnaire.email,
+        matricule: newFonctionnaire.matricule,
+        grade: newFonctionnaire.grade,
+        service: newFonctionnaire.department,
+        role: 'Fonctionnaire',
+        avatar
+      };
+      setUsers([newUserObj, ...users]);
+      setNewFonctionnaire({
+        name: '', email: '', password: 'password123', matricule: '', statut: 'Titulaire',
+        grade: '', echelle: '', echelon: '', anciennete: '', cin: '', phone: '',
+        date_naissance: '', lieu_naissance: '', nationalite: 'Marocaine',
+        diplome: '', department: '', position: '', hire_date: new Date().toISOString().split('T')[0], salary: ''
+      });
+      alert('Compte Fonctionnaire créé avec succès !');
+      setActiveSection('users');
+    } catch (err: any) {
+      console.error(err);
+      const errorMessage = err.response?.data?.errors 
+        ? Object.values(err.response.data.errors).flat().join(', ') 
+        : (err.response?.data?.message || err.message || 'Impossible de créer le compte');
+      alert('Erreur: ' + errorMessage);
+    }
+  };
+
   const saveConcours = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newConcours.title) return;
 
+    let updated;
     if (editingId) {
-      const updated = concours.map(c => c.id === editingId ? { ...c, ...newConcours } : c);
+      updated = concours.map(c => c.id === editingId ? { ...c, ...newConcours } : c);
       setConcours(updated);
-      localStorage.setItem('concours', JSON.stringify(updated));
       setEditingId(null);
     } else {
       const item = { id: Date.now(), ...newConcours };
-      const updated = [item, ...concours];
+      updated = [item, ...concours];
       setConcours(updated);
-      localStorage.setItem('concours', JSON.stringify(updated));
     }
+    
+    // Persist only the non-API ones (or all if we want admin to be the master)
+    // To keep it simple and consistent with Concours.tsx, we save everything to local
+    localStorage.setItem('concours', JSON.stringify(updated.filter(c => typeof c.id === 'number' && c.id > 1000000000000)));
     setNewConcours({ title: '', description: '', date: '' });
   };
 
   const saveArrete = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newArrete.title) return;
+    if (!newArrete.title || !newArrete.employeeId) return;
+
+    const employee = users.find(u => u.id.toString() === newArrete.employeeId);
+    if (!employee) return;
 
     try {
+      const payload = {
+        employee_id: newArrete.employeeId,
+        reference: newArrete.data.reference,
+        description: newArrete.description,
+        data: newArrete.data
+      };
+
       const response = await fetch(`http://localhost:8000/generate/${selectedType}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: newArrete.title,
-          description: newArrete.description,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         window.open(url, '_blank');
+        
+        // Refresh list from backend
+        fetch('http://localhost:8000/arretes')
+          .then(res => res.json())
+          .then(data => setArretes(data));
+
+        // Reset form
+        setNewArrete({ 
+          title: '', 
+          description: '', 
+          employeeId: '', 
+          data: { 
+            new_grade: '', 
+            date_effet: '', 
+            echelon: '', 
+            indice: '', 
+            reference: '', 
+            diplome: '', 
+            specialite: '',
+            note_taches: '',
+            note_rendement: '',
+            note: ''
+          } 
+        });
       }
     } catch (error) {
       console.error('PDF generation error:', error);
     }
-
-    const item = { id: Date.now(), ...newArrete, type: selectedType };
-    setArretes([item, ...arretes]);
-    setNewArrete({ title: '', description: '' });
   };
 
   const deleteArrete = (id: number) => {
@@ -299,6 +484,7 @@ export default function AdminDashboard() {
           <SidebarItem id="annonces" label="Annonces" icon={Megaphone} />
           <SidebarItem id="concours" label="Concours" icon={Briefcase} />
           <SidebarItem id="candidatures" label="Candidatures" icon={FileText} />
+          <SidebarItem id="add-fonctionnaire" label="Ajouter Fonctionnaire" icon={UserPlus} />
           <SidebarItem id="requests" label="User Requests" icon={UserPlus} />
           <SidebarItem id="actualites" label="Actualités" icon={FileText} />
           <SidebarItem id="Arretes" label="Arretes" icon={FileText} />
@@ -347,6 +533,7 @@ export default function AdminDashboard() {
                 {activeSection === 'users' && "Gérez les comptes utilisateurs et leurs permissions."}
                 {activeSection === 'requests' && "Passez en revue les demandes d'inscription des candidats."}
                 {activeSection === 'Arretes' && "Gérez les arrêtés municipaux et administratifs."}
+                {activeSection === 'add-fonctionnaire' && "Inscrivez un nouveau fonctionnaire et générez ses accès."}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -649,12 +836,10 @@ export default function AdminDashboard() {
                       <Label>Type d'arrêté</Label>
                       <div className="grid grid-cols-2 gap-2">
                         {[
-                          { label: 'Titulaire', value: 'arrete_titularisation' },
+                          { label: 'Titularisation', value: 'arrete_titularisation' },
                           { label: 'Recrutement', value: 'arrete_recruter' },
                           { label: 'Reclassement', value: 'arrete_reclassement' },
-                          { label: 'Evaluation', value: 'arrete_nomination' },
                           { label: 'Avancement', value: 'arrete_avancement' },
-                          { label: 'Notation', value: 'notation' },
                         ].map((t) => (
                           <Button
                             key={t.value}
@@ -669,20 +854,59 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label>Titre</Label>
-                      <Input value={newArrete.title} onChange={e => setNewArrete({...newArrete, title: e.target.value})} />
+                      <Label>Employé concerné</Label>
+                      <select 
+                        className="w-full h-10 rounded-xl border border-slate-200 px-3 text-sm focus:ring-2 focus:ring-blue-500"
+                        value={newArrete.employeeId}
+                        onChange={e => setNewArrete({...newArrete, employeeId: e.target.value})}
+                      >
+                        <option value="">Sélectionner un employé...</option>
+                        {users.map(u => (
+                          <option key={u.id} value={u.id}>{u.name} ({u.matricule})</option>
+                        ))}
+                      </select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Description</Label>
+                      <Label>Titre de l'acte</Label>
+                      <Input value={newArrete.title} onChange={e => setNewArrete({...newArrete, title: e.target.value})} placeholder="ex: Arrêté d'avancement 2026" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Nouveau Grade/Echelon</Label>
+                        <Input value={newArrete.data.new_grade} onChange={e => setNewArrete({...newArrete, data: {...newArrete.data, new_grade: e.target.value}})} placeholder="Grade/Echelon" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Date d'effet</Label>
+                        <Input type="date" value={newArrete.data.date_effet} onChange={e => setNewArrete({...newArrete, data: {...newArrete.data, date_effet: e.target.value}})} />
+                      </div>
+                    </div>
+                    {selectedType === 'arrete_recruter' && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Diplôme</Label>
+                          <Input value={newArrete.data.diplome} onChange={e => setNewArrete({...newArrete, data: {...newArrete.data, diplome: e.target.value}})} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Spécialité</Label>
+                          <Input value={newArrete.data.specialite} onChange={e => setNewArrete({...newArrete, data: {...newArrete.data, specialite: e.target.value}})} />
+                        </div>
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <Label>Référence administrative</Label>
+                      <Input value={newArrete.data.reference} onChange={e => setNewArrete({...newArrete, data: {...newArrete.data, reference: e.target.value}})} placeholder="ex: RH/2026/001" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description/Notes</Label>
                       <textarea 
-                        className="w-full min-h-[120px] rounded-xl border border-slate-200 p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                        className="w-full min-h-[80px] rounded-xl border border-slate-200 p-3 text-sm focus:ring-2 focus:ring-blue-500" 
                         value={newArrete.description} 
                         onChange={e => setNewArrete({...newArrete, description: e.target.value})} 
                       />
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Ajouter</Button>
+                    <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 font-bold h-12 rounded-xl">Générer & Ajouter</Button>
                   </CardFooter>
                 </form>
               </Card>
@@ -691,20 +915,64 @@ export default function AdminDashboard() {
                   <table className="w-full text-left">
                     <thead className="bg-slate-50/50 text-[10px] uppercase font-black text-slate-400">
                       <tr>
-                        <th className="px-6 py-4">Titre</th>
-                        <th className="px-6 py-4">Description</th>
+                        <th className="px-6 py-4">Acte / Employé</th>
+                        <th className="px-6 py-4">Type / Détails</th>
                         <th className="px-6 py-4 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                       {arretes.map(a => (
                         <tr key={a.id} className="hover:bg-slate-50/50 transition-colors">
-                          <td className="px-6 py-6 font-bold text-sm text-slate-900 dark:text-white">{a.title}</td>
-                          <td className="px-6 py-6 text-sm text-slate-500">{a.description}</td>
+                          <td className="px-6 py-6">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-sm text-slate-900 dark:text-white">{a.reference || a.title}</span>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[10px] text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded">
+                                  {a.fonctionnaire?.matricule || a.employeeMatricule}
+                                </span>
+                                <span className="text-[10px] text-slate-500 uppercase font-medium">
+                                  {a.fonctionnaire?.user?.name || a.employeeName}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-6">
+                            <div className="flex flex-col gap-1">
+                              <Badge variant="outline" className="w-fit text-[9px] uppercase font-black bg-slate-50">{a.type.replace('arrete_', '')}</Badge>
+                              <div className="flex items-center gap-3">
+                                <span className="text-[10px] text-slate-400 font-mono">{a.reference}</span>
+                                {(a.data?.date_effet || a.issue_date) && (
+                                  <span className="text-[10px] text-emerald-600 font-bold">
+                                    {new Date(a.data?.date_effet || a.issue_date).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
                           <td className="px-6 py-6 text-right">
-                            <Button variant="ghost" size="icon" onClick={() => deleteArrete(a.id)} className="text-red-400 hover:text-red-600">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <div className="flex justify-end items-center gap-2">
+                              <Button variant="ghost" size="icon" onClick={() => {
+                                // Re-generate from stored DB record logic
+                                const payload = {
+                                  employee_id: a.fonctionnaire_id,
+                                  reference: a.reference,
+                                  data: a.data
+                                };
+                                fetch(`http://localhost:8000/generate/${a.type}`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify(payload),
+                                }).then(res => res.blob()).then(blob => {
+                                  const url = window.URL.createObjectURL(blob);
+                                  window.open(url, '_blank');
+                                });
+                              }} className="text-blue-400 hover:text-blue-600">
+                                <ExternalLink className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => deleteArrete(a.id)} className="text-slate-300 hover:text-red-600">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -720,6 +988,131 @@ export default function AdminDashboard() {
                 </div>
               </Card>
             </div>
+          )}
+
+          {activeSection === 'add-fonctionnaire' && (
+            <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden">
+              <form onSubmit={saveFonctionnaire}>
+                <CardHeader className="p-10 border-b border-slate-50 dark:border-slate-800">
+                  <CardTitle className="text-2xl font-black">Créer un Compte Fonctionnaire</CardTitle>
+                  <CardDescription>Remplissez les informations professionnelles et personnelles pour générer les accès.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-10 space-y-10">
+                  {/* ACCÈS LOGIN */}
+                  <div className="space-y-6">
+                    <h4 className="text-xs font-black uppercase text-blue-600 tracking-widest flex items-center gap-2">
+                      <Lock className="h-4 w-4" /> Accès & Authentification
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <Label>Nom Complet</Label>
+                        <Input value={newFonctionnaire.name} onChange={e => setNewFonctionnaire({...newFonctionnaire, name: e.target.value})} placeholder="ex: Ahmed Alami" required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Email (Login)</Label>
+                        <Input type="email" value={newFonctionnaire.email} onChange={e => setNewFonctionnaire({...newFonctionnaire, email: e.target.value})} placeholder="ex: a.alami@larache.ma" required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Mot de passe provisoire</Label>
+                        <Input value={newFonctionnaire.password} onChange={e => setNewFonctionnaire({...newFonctionnaire, password: e.target.value})} placeholder="8 caractères min." required />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator className="bg-slate-50 dark:bg-slate-800" />
+
+                  {/* PRO PROFILE */}
+                  <div className="space-y-6">
+                    <h4 className="text-xs font-black uppercase text-blue-600 tracking-widest flex items-center gap-2">
+                      <Briefcase className="h-4 w-4" /> Situation Administrative
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                      <div className="space-y-2">
+                        <Label>Matricule</Label>
+                        <Input value={newFonctionnaire.matricule} onChange={e => setNewFonctionnaire({...newFonctionnaire, matricule: e.target.value})} placeholder="ex: 1961006" required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Statut</Label>
+                        <select className="w-full h-11 bg-slate-50 dark:bg-slate-800 rounded-xl border-none px-4 text-sm" value={newFonctionnaire.statut} onChange={e => setNewFonctionnaire({...newFonctionnaire, statut: e.target.value})}>
+                          <option>Titulaire</option>
+                          <option>Stagiaire</option>
+                          <option>Contractuel</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Grade</Label>
+                        <Input value={newFonctionnaire.grade} onChange={e => setNewFonctionnaire({...newFonctionnaire, grade: e.target.value})} placeholder="ex: Administrateur 2ème grade" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Service / Département</Label>
+                        <Input value={newFonctionnaire.department} onChange={e => setNewFonctionnaire({...newFonctionnaire, department: e.target.value})} placeholder="ex: Service Informatique" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                      <div className="space-y-2">
+                        <Label>Échelle</Label>
+                        <Input value={newFonctionnaire.echelle} onChange={e => setNewFonctionnaire({...newFonctionnaire, echelle: e.target.value})} placeholder="ex: Hors Echelle" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Échelon</Label>
+                        <Input value={newFonctionnaire.echelon} onChange={e => setNewFonctionnaire({...newFonctionnaire, echelon: e.target.value})} placeholder="ex: 5" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Ancienneté</Label>
+                        <Input value={newFonctionnaire.anciennete} onChange={e => setNewFonctionnaire({...newFonctionnaire, anciennete: e.target.value})} placeholder="ex: 2 ans et 3 mois" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Date de recrutement</Label>
+                        <Input type="date" value={newFonctionnaire.hire_date} onChange={e => setNewFonctionnaire({...newFonctionnaire, hire_date: e.target.value})} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator className="bg-slate-50 dark:bg-slate-800" />
+
+                  {/* PERSONAL INFO */}
+                  <div className="space-y-6">
+                    <h4 className="text-xs font-black uppercase text-blue-600 tracking-widest flex items-center gap-2">
+                      <User className="h-4 w-4" /> Informations Personnelles
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <Label>CIN / Identifiant</Label>
+                        <Input value={newFonctionnaire.cin} onChange={e => setNewFonctionnaire({...newFonctionnaire, cin: e.target.value})} placeholder="ex: QH599134" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Téléphone</Label>
+                        <Input value={newFonctionnaire.phone} onChange={e => setNewFonctionnaire({...newFonctionnaire, phone: e.target.value})} placeholder="06XXXXXXXX" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Diplôme</Label>
+                        <Input value={newFonctionnaire.diplome} onChange={e => setNewFonctionnaire({...newFonctionnaire, diplome: e.target.value})} placeholder="ex: Master en Management" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <Label>Date de naissance</Label>
+                        <Input type="date" value={newFonctionnaire.date_naissance} onChange={e => setNewFonctionnaire({...newFonctionnaire, date_naissance: e.target.value})} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Lieu de naissance</Label>
+                        <Input value={newFonctionnaire.lieu_naissance} onChange={e => setNewFonctionnaire({...newFonctionnaire, lieu_naissance: e.target.value})} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Nationalité</Label>
+                        <Input value={newFonctionnaire.nationalite} onChange={e => setNewFonctionnaire({...newFonctionnaire, nationalite: e.target.value})} />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-10 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-4">
+                  <Button type="button" variant="ghost" onClick={() => setActiveSection('users')} className="font-bold">Annuler</Button>
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700 px-10 h-14 rounded-2xl font-black text-white shadow-xl shadow-blue-600/20">
+                    <UserPlus className="h-5 w-5 mr-3" /> Créer & Ajouter Fonctionnaire
+                  </Button>
+                </CardFooter>
+              </form>
+            </Card>
           )}
         </div>
       </main>

@@ -8,3 +8,8 @@ Route::get('/', function () {
 });
 
 Route::post('/generate/{type}', [ArreteController::class, 'generate']);
+Route::get('/arretes', [ArreteController::class, 'index']);
+Route::get('/fonctionnaires', function() {
+    return \App\Models\Fonctionnaire::with('user')->get();
+});
+Route::get('/arrete/download/{id}', [ArreteController::class, 'download']);
