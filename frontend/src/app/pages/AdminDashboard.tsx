@@ -14,29 +14,6 @@ import { Separator } from '../components/ui/separator';
 import { useTranslation } from '../i18n';
 import { concoursApi, fonctionnaireApi, getStoredUser, isAuthenticated, authApi } from '../lib/api';
 
-// --- MOCK DATA ---
-const INITIAL_USERS = [
-  { id: 1, name: 'Admin Principal', email: 'admin@gmail.com', role: 'Administrateur', avatar: 'AD', status: 'accepted', matricule: 'ADMIN01', cin: 'L123456', grade: 'Administrateur Principal', service: 'RH', date_recrutement: '2020-01-01', birth_date: '1985-05-15', lieu_naissance: 'Larache', telephone: '0612345678', situation_familiale: 'Marié(e)' },
-  { id: 2, name: 'Sami Alami', email: 'sami.alami@larache.ma', role: 'Candidat', avatar: 'SA', status: 'accepted', matricule: 'MAT882', cin: 'L99201', grade: 'Technicien 3ème grade', service: 'Travaux', date_recrutement: '2022-03-12', birth_date: '1992-11-20', lieu_naissance: 'Tanger', telephone: '0687654321', situation_familiale: 'Célibataire' },
-  { id: 3, name: 'Nadia Benani', email: 'nadia.b@larache.ma', role: 'Candidat', avatar: 'NB', status: 'accepted', matricule: 'MAT443', cin: 'L77382', grade: 'Adjoint Administratif 2ème grade', service: 'Finances', date_recrutement: '2021-06-25', birth_date: '1990-02-10', lieu_naissance: 'Ksar El Kebir', telephone: '0655443322', situation_familiale: 'Marié(e)' },
-  { id: 4, name: 'Karim Tazi', email: 'k.tazi@gmail.com', role: 'Candidat', avatar: 'KT', status: 'accepted', matricule: 'MAT112', cin: 'L11029', grade: 'Ingénieur d\'Etat 1er grade', service: 'SI', date_recrutement: '2023-01-10', birth_date: '1995-07-05', lieu_naissance: 'Larache', telephone: '0600112233', situation_familiale: 'Célibataire' },
-];
-
-const INITIAL_ANNONCES = [
-  { id: 1, title: 'Concours de Médecins 1er Grade', description: 'Ouverture du concours pour le recrutement de 5 médecins.', date: '2026-05-10', status: 'Publié' },
-  { id: 2, title: 'Avis de Recrutement Infirmiers', description: 'Recrutement de 15 infirmiers pour les centres de santé.', date: '2026-05-12', status: 'Brouillon' },
-];
-
-const INITIAL_ACTUALITES = [
-  { id: 1, title: 'Lancement du Portail e-RH', content: 'Le nouveau portail est désormais accessible à tous les citoyens.', date: '2026-05-01' },
-  { id: 2, title: 'Inauguration du Centre Administratif', content: 'Un nouveau centre pour faciliter les démarches RH.', date: '2026-04-28' },
-];
-
-const RECENT_ACTIVITIES = [
-  { id: 1, action: 'Nouvel utilisateur inscrit', user: 'Karim Tazi', time: 'il y a 5 min' },
-  { id: 2, action: 'Concours publié', user: 'Admin', time: 'il y a 20 min' },
-  { id: 3, action: 'Candidature reçue', user: 'Nadia Benani', time: 'il y a 1 heure' },
-];
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -68,9 +45,9 @@ export default function AdminDashboard() {
   }
 
   // --- STATE FOR MOCK DATA ---
-  const [users, setUsers] = useState(INITIAL_USERS);
-  const [annonces, setAnnonces] = useState(INITIAL_ANNONCES);
-  const [actualites, setActualites] = useState(INITIAL_ACTUALITES);
+  const [users, setUsers] = useState<any[]>([]);
+  const [annonces, setAnnonces] = useState<any[]>([]);
+  const [actualites, setActualites] = useState<any[]>([]);
   
   // Form and Edit states
   const [newAnnonce, setNewAnnonce] = useState({ title: '', description: '' });
@@ -110,14 +87,16 @@ export default function AdminDashboard() {
     data: { 
       new_grade: '', 
       date_effet: '', 
+      echelle: '',
       echelon: '', 
       indice: '', 
       reference: '',
       diplome: '',
-      specialite: ''
+      specialite: '',
+      note: ''
     } 
   });
-  const [selectedType, setSelectedType] = useState('arrete_avancement');
+  const [selectedType, setSelectedType] = useState('avancement');
 
   // Load from localStorage
   useEffect(() => {
@@ -126,13 +105,11 @@ export default function AdminDashboard() {
     
     const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
     if (storedUsers.length > 0) {
-      const initialEmails = new Set(INITIAL_USERS.map(u => u.email));
-      const filteredStored = storedUsers.filter((u: any) => !initialEmails.has(u.email));
-      const mappedStored = filteredStored.map((u: any) => ({
+      const mappedStored = storedUsers.map((u: any) => ({
         ...u,
         avatar: u.avatar || u.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().substring(0, 2)
       }));
-      setUsers([...INITIAL_USERS, ...mappedStored]);
+      setUsers(mappedStored);
     }
 
     const storedAnnonces = JSON.parse(localStorage.getItem('annonces') || '[]');
@@ -176,7 +153,7 @@ export default function AdminDashboard() {
     setCandidatures(storedCandidatures);
 
     // Fetch real data from backend
-    fetch('http://localhost:8000/arretes')
+    fetch('http://localhost:8000/api/v1/arretes')
       .then(res => res.json())
       .then(data => setArretes(data))
       .catch(err => console.error('Error fetching arretes:', err));
@@ -228,11 +205,6 @@ export default function AdminDashboard() {
   useEffect(() => {
     localStorage.setItem('actualites', JSON.stringify(actualites));
   }, [actualites]);
-
-  // Sync arretes to localStorage
-  useEffect(() => {
-    localStorage.setItem('arretes', JSON.stringify(arretes));
-  }, [arretes]);
 
   const handleLogout = async () => {
     await authApi.logout();
@@ -347,27 +319,46 @@ export default function AdminDashboard() {
     if (!employee) return;
 
     try {
-      const payload = {
+      console.log('Submitting Arrete with payload:', {
         employee_id: newArrete.employeeId,
+        type: selectedType,
+        data: newArrete.data
+      });
+
+      const payload = {
+        employee_id: parseInt(newArrete.employeeId),
         title: newArrete.title,
         reference: newArrete.data.reference,
         description: newArrete.description,
         data: newArrete.data
       };
 
-      const response = await fetch(`http://localhost:8000/generate/${selectedType}`, {
+      const response = await fetch(`http://localhost:8000/api/v1/generate/${selectedType}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
+        
+        // Open in new tab for preview
         window.open(url, '_blank');
         
+        // Also trigger download
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${selectedType}_${newArrete.data.reference || 'document'}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        
         // Refresh list from backend
-        fetch('http://localhost:8000/arretes')
+        fetch('http://localhost:8000/api/v1/arretes')
           .then(res => res.json())
           .then(data => setArretes(data));
 
@@ -379,19 +370,34 @@ export default function AdminDashboard() {
           data: { 
             new_grade: '', 
             date_effet: '', 
+            echelle: '',
             echelon: '', 
             indice: '', 
             reference: '', 
             diplome: '', 
             specialite: '',
-            note_taches: '',
-            note_rendement: '',
             note: ''
           } 
         });
+        alert('Document généré et téléchargé avec succès !');
+      } else {
+        let errorMessage = 'Une erreur inconnue est survenue';
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errData = await response.json();
+            errorMessage = errData.message || (errData.errors ? JSON.stringify(errData.errors) : errorMessage);
+          } else {
+            errorMessage = `Erreur serveur (${response.status}): ${response.statusText}`;
+          }
+        } catch (e) {
+          console.error('Error parsing error response:', e);
+        }
+        alert('Erreur: ' + errorMessage);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('PDF generation error:', error);
+      alert('Une erreur est survenue lors de la communication avec le serveur: ' + (error.message || 'Vérifiez que le backend (port 8000) est bien lancé.'));
     }
   };
 
@@ -831,10 +837,11 @@ export default function AdminDashboard() {
                       <Label>Type d'arrêté</Label>
                       <div className="grid grid-cols-2 gap-2">
                         {[
-                          { label: 'Titularisation', value: 'arrete_titularisation' },
-                          { label: 'Recrutement', value: 'arrete_recruter' },
-                          { label: 'Reclassement', value: 'arrete_reclassement' },
-                          { label: 'Avancement', value: 'arrete_avancement' },
+                          { label: 'Titularisation', value: 'titularisation' },
+                          { label: 'Recrutement', value: 'recrutement' },
+                          { label: 'Reclassement', value: 'reclassement' },
+                          { label: 'Avancement', value: 'avancement' },
+                          { label: 'Nomination', value: 'nomination' },
                         ].map((t) => (
                           <Button
                             key={t.value}
@@ -856,8 +863,8 @@ export default function AdminDashboard() {
                         onChange={e => setNewArrete({...newArrete, employeeId: e.target.value})}
                       >
                         <option value="">Sélectionner un employé...</option>
-                        {users.map(u => (
-                          <option key={u.id} value={u.id}>{u.name} ({u.matricule})</option>
+                        {users.filter(u => u.role === 'Fonctionnaire' && u.id < 1000000).map(u => (
+                          <option key={u.id} value={u.id}>{u.name} ({u.matricule || 'Sans matricule'})</option>
                         ))}
                       </select>
                     </div>
@@ -872,10 +879,26 @@ export default function AdminDashboard() {
                       </div>
                       <div className="space-y-2">
                         <Label>Date d'effet</Label>
-                        <Input type="date" value={newArrete.data.date_effet} onChange={e => setNewArrete({...newArrete, data: {...newArrete.data, date_effet: e.target.value}})} />
+                        <Input type="date" value={newArrete.data.date_effet} onChange={e => setNewArrete({...newArrete, data: {...newArrete.data, date_effet: e.target.value}})} required />
                       </div>
                     </div>
-                    {selectedType === 'arrete_recruter' && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Échelle / Échelon</Label>
+                        <div className="flex gap-2">
+                          <Input value={newArrete.data.echelle} onChange={e => setNewArrete({...newArrete, data: {...newArrete.data, echelle: e.target.value}})} placeholder="Echelle" />
+                          <Input value={newArrete.data.echelon} onChange={e => setNewArrete({...newArrete, data: {...newArrete.data, echelon: e.target.value}})} placeholder="Echelon" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Indice / Note</Label>
+                        <div className="flex gap-2">
+                          <Input value={newArrete.data.indice} onChange={e => setNewArrete({...newArrete, data: {...newArrete.data, indice: e.target.value}})} placeholder="Indice" />
+                          <Input value={newArrete.data.note} onChange={e => setNewArrete({...newArrete, data: {...newArrete.data, note: e.target.value}})} placeholder="Note /20" />
+                        </div>
+                      </div>
+                    </div>
+                    {selectedType === 'recrutement' && (
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label>Diplôme</Label>
@@ -953,9 +976,12 @@ export default function AdminDashboard() {
                                   reference: a.reference,
                                   data: a.data
                                 };
-                                fetch(`http://localhost:8000/generate/${a.type}`, {
+                                fetch(`http://localhost:8000/api/v1/generate/${a.type}`, {
                                   method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
+                                  headers: { 
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                  },
                                   body: JSON.stringify(payload),
                                 }).then(res => res.blob()).then(blob => {
                                   const url = window.URL.createObjectURL(blob);

@@ -101,20 +101,17 @@
                 ولاية جهة طنجة تطوان الحسيمة<br>
                 عمالة إقليم العرائش<br>
                 جماعة العرائش<br>
-                مديرية المصالح<br>
-                قسم الموارد البشرية
-            </td>
-            <td class="header-right">
+                    <td class="header-right">
                 الانتساب المالي : م.ع.<br>
-                رقم التأجير : {{ $employee->matricule ?? '........' }}<br>
-                رقم ب.و.ت : {{ $employee->cnie ?? '........' }}<br>
-                الرقم ا.ص.م.ت : {{ $employee->matricule ?? '........' }}
+                رقم التأجير : {{ $employee->matricule ?? '-' }}<br>
+                رقم ب.و.ت : {{ $employee->cnie ?? '-' }}<br>
+                الرقم ا.ص.م.ت : {{ $employee->matricule ?? '-' }}
             </td>
         </tr>
     </table>
 
     <div class="title">
-        قرار رقم {{ $acte->reference ?? '........' }} بتاريخ {{ $acte->issue_date->format('d/m/Y') }}<br>
+        قرار رقم {{ $acte->reference ?? '-' }} بتاريخ {{ $acte->issue_date->format('d/m/Y') }}<br>
         إن رئيس جماعة العرائش
     </div>
 
@@ -122,24 +119,24 @@
         <li>• بناء على الظهير الشريف رقم 1.15.85 الصادر في 20 رمضان 1436 (2015.07.07) بتنفيذ القانون التنظيمي رقم 113.14 المتعلق بالجماعات.</li>
         <li>• بناء على الظهير الشريف رقم 1.58.008 الصادر بتاريخ 4 شعبان 1377 (1958.02.24) بمثابة النظام الأساسي العام للوظيفة العمومية كما وقع تغييره وتتميمه.</li>
         <li>• بناء على المرسوم رقم 2.77.738 الصادر بتاريخ 13 شوال 1397 (1977.09.27) بمثابة النظام الأساسي لموظفي الجماعات المحلية كما تم تعديله وتتميمه.</li>
-        <li>• بناء على المرسوم رقم 2.05.72 الصادر بتاريخ 29 شوال 1426 (2005.12.02) بشأن النظام الأساسي الخاص بهيئة التقنيين المشتركة بين الوزارات.</li>
+        <li>• بناء على المرسوم رقم 2.05.72 الصادر بتاريخ 29 شوال 1426 (2005.12.02) بشأن النظام الأساسي الخاص بهيئة التقنيين المشتركة entre الوزارات.</li>
         <li>• بناء على المرسوم رقم 2.62.344 الصادر بتاريخ 15 صفر 1383 (1963.07.08) بتحديد سلالم الأجور وشروط الترقي في الرتبة والدرجة.</li>
         <li>• بناء على المرسوم رقم 2.05.1367 الصادر بتاريخ 29 شوال 1426 (2005.12.02) بتحديد مسطرة تنقيط وتقييم موظفي الإدارات العمومية.</li>
         <li>• بناء على المرسوم الملكي رقم 62.68 الصادر في 19 صفر 1388 (1968.05.17) المحدد للمقتضيات المطبقة على الموظفين المتمرنين بالإدارات العمومية.</li>
-        <li>• بناء على تقرير التقييم الإيجابي للسيد(ة) {{ $employee->prenom ?? '......' }} {{ $employee->nom ?? '......' }} خلال فترة التمرين.</li>
+        <li>• بناء على تقرير التقييم الإيجابي للسيد(ة) {{ $employee->prenom ?? '-' }} {{ $employee->nom ?? '-' }} خلال فترة التمرين.</li>
     </ul>
 
     <div class="decision">يقــــــرر</div>
 
     <div class="article">
         <span class="article-title">الفصل الأول:</span>
-        يتم ترسيم السيد(ة) {{ $employee->prenom ?? '......' }} {{ $employee->nom ?? '......' }} المزداد(ة) بتاريخ {{ $employee->date_naissance ?? '........' }} 
-        وذلك ابتداء من {{ $record->date_effet ?? '........' }} 
+        يتم ترسيم السيد(ة) {{ $employee->prenom ?? '-' }} {{ $employee->nom ?? '-' }} المزداد(ة) بتاريخ {{ $employee->date_naissance ?? '-' }} 
+        وذلك ابتداء من {{ $titularisation->date_effet ?? '-' }} 
         بعد قضاء فترة التدريب المحددة في 12 شهر
-        في درجة {{ $record->grade ?? $employee->grade ?? '........' }} السلم
-        ....... الرتبة
-        ....... الرقم الاستدلالي
-        .......
+        في درجة {{ $titularisation->new_grade ?? $employee->grade ?? '-' }} 
+        السلم {{ $titularisation->echelle ?? '-' }} 
+        الرتبة {{ $titularisation->echelon ?? '-' }} 
+        الرقم الاستدلالي {{ $titularisation->indice ?? '-' }}
     </div>
 
     <div class="article">
@@ -159,8 +156,8 @@
             <th colspan="4" class="section-header">الوضعية الجديدة</th>
         </tr>
         <tr>
-            <th colspan="4">الدرجة: {{ $employee->grade ?? '...' }}</th>
-            <th colspan="4">الدرجة: {{ $record->grade ?? $employee->grade ?? '...' }}</th>
+            <th colspan="4">الدرجة: {{ $employee->grade ?? '-' }}</th>
+            <th colspan="4">الدرجة: {{ $titularisation->new_grade ?? $employee->grade ?? '-' }}</th>
         </tr>
         <tr>
             <th>السلم</th>
@@ -173,20 +170,20 @@
             <th>تاريخ المفعول</th>
         </tr>
         <tr>
-            <td>...</td>
-            <td>{{ $employee->echelon ?? '...' }}</td>
-            <td>...</td>
-            <td>{{ $employee->date_recrutement ?? '........' }}</td>
+            <td>{{ $employee->echelle ?? '-' }}</td>
+            <td>{{ $employee->echelon ?? '-' }}</td>
+            <td>{{ $employee->indice ?? '-' }}</td>
+            <td>{{ $employee->date_recrutement ?? '-' }}</td>
             <td>12 شهر</td>
-            <td>...</td>
-            <td>...</td>
-            <td>...</td>
-            <td>{{ $record->date_effet ?? '........' }}</td>
+            <td>{{ $titularisation->echelle ?? '-' }}</td>
+            <td>{{ $titularisation->echelon ?? '-' }}</td>
+            <td>{{ $titularisation->indice ?? '-' }}</td>
+            <td>{{ $titularisation->date_effet ?? '-' }}</td>
         </tr>
     </table>
 
     <div class="signature" style="margin-top: 40px;">
-        <p>حرر بالعرائش في: {{ $acte->issue_date->format('d/m/Y') }}</p>
+        <p>حرر بالعرائش في: {{ $acte->issue_date ? $acte->issue_date->format('d/m/Y') : '-' }}</p>
         <p>رئيس جماعة العرائش</p>
     </div>
 </body>

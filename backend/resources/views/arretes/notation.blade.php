@@ -77,9 +77,9 @@
             </td>
             <td style="width: 50%; vertical-align: top; text-align: left; line-height: 1.5; border: none;">
                 <p style="margin: 3px 0;">الانتساب المالي : م.ع.</p>
-                <p style="margin: 3px 0;">رقم التأجير : {{ $fonctionnaire->matricule ?? '................' }}</p>
-                <p style="margin: 3px 0;">رقم ب.و.ت : {{ $fonctionnaire->cnie ?? '................' }}</p>
-                <p style="margin: 3px 0;">رقم : ................</p>
+                <p style="margin: 3px 0;">رقم التأجير : {{ $fonctionnaire->matricule ?? '' }}</p>
+                <p style="margin: 3px 0;">رقم ب.و.ت : {{ $fonctionnaire->cnie ?? '' }}</p>
+                <p style="margin: 3px 0;">رقم : {{ $acte->reference ?? '' }}</p>
             </td>
         </tr>
       </table>
@@ -217,11 +217,11 @@
         <tr style="border: none;">
           <td style="border: none; width: 50%; font-size: 14px;">
             توقيع الرئيس المباشر<br>
-            <span style="font-size: 10px; color: #666;">{{ $contenu['nom_chef_direct'] ?? '' }}</span>
+            <span style="font-size: 10px; color: #666;">{{ $contenu['nom_chef_direct'] ?? 'رئيس المصلحة' }}</span>
           </td>
           <td style="border: none; width: 50%; font-size: 14px;">
             توقيع الوالي / العامل<br>
-            <span style="font-size: 10px; color: #666;">{{ $contenu['nom_directeur'] ?? '' }}</span>
+            <span style="font-size: 10px; color: #666;">{{ $contenu['nom_directeur'] ?? 'رئيس الجماعة' }}</span>
           </td>
         </tr>
       </table>

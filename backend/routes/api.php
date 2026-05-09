@@ -40,12 +40,6 @@ Route::prefix('v1')->group(function () {
         ->middleware(['auth:sanctum', 'role:admin'])
         ->parameters(['fonctionnaires' => 'fonctionnaire']);
 
-    // Notation Routes
-    Route::apiResource('notations', NotationController::class)
-        ->middleware(['auth:sanctum', 'role:admin,fonctionnaire'])
-        ->parameters(['notations' => 'notation']);
-    Route::get('fonctionnaire/{fonctionnaire}/notations', [NotationController::class, 'byFonctionnaire'])->middleware('auth:sanctum');
-
     // Acte Administratif Routes (with PDF generation)
     Route::apiResource('actes-administratifs', ActeAdministratifController::class)
         ->middleware(['auth:sanctum', 'role:admin'])
@@ -56,8 +50,23 @@ Route::prefix('v1')->group(function () {
     // Dashboard
     Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth:sanctum', 'role:admin']);
 
+    // Arrêtés Generation (No CSRF required)
+    Route::post('generate/{type}', [\App\Http\Controllers\ArreteController::class, 'generate']);
+    Route::get('generate/{type}/test', [\App\Http\Controllers\ArreteController::class, 'test']); // Debug Route
+    Route::get('arretes', [\App\Http\Controllers\ArreteController::class, 'index']);
+    Route::get('arrete/download/{id}', [\App\Http\Controllers\ArreteController::class, 'download']);
+
     // Notifications
     Route::get('notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->middleware('auth:sanctum');
     Route::patch('notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->middleware('auth:sanctum');
     Route::delete('notifications', [\App\Http\Controllers\NotificationController::class, 'clearAll'])->middleware('auth:sanctum');
+    
+    Route::get('run-migrations', function() {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            return "Migrations success: " . \Illuminate\Support\Facades\Artisan::output();
+        } catch (\Exception $e) {
+            return "Migrations failed: " . $e->getMessage();
+        }
+    });
 });

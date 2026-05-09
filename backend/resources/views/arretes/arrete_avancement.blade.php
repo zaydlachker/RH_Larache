@@ -119,15 +119,15 @@
             </td>
             <td style="width: 50%; vertical-align: top; text-align: left; line-height: 1.5; border: none;">
                 <p style="margin: 3px 0;">الانتساب المالي : م.ع.</p>
-                <p style="margin: 3px 0;">رقم التأجير : {{ $employee->matricule ?? '' }}</p>
-                <p style="margin: 3px 0;">رقم ب.و.ت : {{ $employee->cnie ?? '' }}</p>
-                <p style="margin: 3px 0;">رقم : {{ $acte->reference ?? '' }}</p>
+                <p style="margin: 3px 0;">رقم التأجير : {{ $employee->matricule ?? '-' }}</p>
+                <p style="margin: 3px 0;">رقم ب.و.ت : {{ $employee->cnie ?? '-' }}</p>
+                <p style="margin: 3px 0;">رقم : {{ $acte->reference ?? '-' }}</p>
             </td>
         </tr>
     </table>
 
     <div class="title">
-        <div>بطاقة الترشيح لأجل الترقي بالاختيار إلى درجة <span class="dotted-line">{{ $record->nouveau_grade ?? '' }}</span> برسم سنة <span style="font-weight: bold;">{{ date('Y', strtotime($record->date_effet ?? 'now')) }}</span></div>
+        <div>بطاقة الترشيح لأجل الترقي بالاختيار إلى درجة <span class="dotted-line">{{ $avancement->new_grade ?? '-' }}</span> برسم سنة <span style="font-weight: bold;">{{ isset($avancement->date_effet) ? date('Y', strtotime($avancement->date_effet)) : date('Y') }}</span></div>
         <div>(نموذج خاص بهيئة متصرفي وزارة الداخلية)</div>
     </div>
 
@@ -135,31 +135,31 @@
         <div class="section-title">1- المعطيات الشخصية</div>
         <div class="data-row">
             <span class="label">الاسم الشخصي</span> : 
-            <span class="value">{{ $employee->prenom ?? '' }}</span>
+            <span class="value">{{ $employee->prenom ?? '-' }}</span>
         </div>
         <div class="data-row">
             <span class="label">الاسم العائلي</span> : 
-            <span class="value">{{ $employee->nom ?? '' }}</span>
+            <span class="value">{{ $employee->nom ?? '-' }}</span>
         </div>
         <div class="data-row">
             <span class="label">تاريخ ومكان الازدياد</span> : 
-            <span class="value">{{ $employee->date_naissance ?? '' }} بـ {{ $employee->lieu_naissance ?? '' }}</span>
+            <span class="value">{{ $employee->date_naissance ?? '-' }} بـ {{ $employee->lieu_naissance ?? '-' }}</span>
         </div>
         <div class="data-row">
             <span class="label">الحالة العائلية</span> : 
-            <span class="value">{{ $employee->situation_familiale ?? '' }}</span>
+            <span class="value">{{ $employee->situation_familiale ?? '-' }}</span>
         </div>
         <div class="data-row">
             <span class="label">رقم بطاقة التعريف الوطنية</span> : 
-            <span class="value">{{ $employee->cnie ?? '' }}</span>
+            <span class="value">{{ $employee->cnie ?? '-' }}</span>
         </div>
         <div class="data-row">
             <span class="label">رقم الهاتف</span> : 
-            <span class="value">{{ $employee->telephone ?? '' }}</span>
+            <span class="value">{{ $employee->telephone ?? '-' }}</span>
         </div>
         <div class="data-row">
             <span class="label">البريد الإلكتروني</span> : 
-            <span class="value">{{ $employee->email ?? '' }}</span>
+            <span class="value">{{ $employee->email ?? '-' }}</span>
         </div>
     </div>
 
@@ -167,11 +167,11 @@
         <div class="section-title">2- المعطيات الإدارية</div>
         <div class="data-row">
             <span class="label">رقم التأجير</span> : 
-            <span class="value">{{ $employee->matricule ?? '' }}</span>
+            <span class="value">{{ $employee->matricule ?? '-' }}</span>
         </div>
         <div class="data-row">
             <span class="label">تاريخ التوظيف</span> : 
-            <span class="value">{{ $employee->date_recrutement ?? '' }}</span>
+            <span class="value">{{ $employee->date_recrutement ?? '-' }}</span>
         </div>
         
         <table style="width: 100%; margin-top: 5px; border: none;">
@@ -179,13 +179,13 @@
                 <td style="width: 50%; border: none; text-align: right;">
                     <div class="data-row">
                         <span class="label" style="width: 100px;">الدرجة الحالية</span> : 
-                        <span class="value">{{ $employee->grade ?? '' }}</span>
+                        <span class="value">{{ $employee->grade ?? '-' }}</span>
                     </div>
                 </td>
                 <td style="width: 50%; border: none; text-align: right;">
                     <div class="data-row">
                         <span style="display:inline-block; width: 150px;">تاريخ التعيين في الدرجة :</span>
-                        <span class="value">{{ $employee->date_recrutement ?? '' }}</span>
+                        <span class="value">{{ $employee->date_recrutement ?? '-' }}</span>
                     </div>
                 </td>
             </tr>
@@ -193,13 +193,13 @@
                 <td style="border: none; text-align: right;">
                     <div class="data-row">
                         <span class="label" style="width: 100px;">الرتبة الحالية</span> : 
-                        <span class="value">{{ $employee->echelon ?? '' }}</span>
+                        <span class="value">{{ $employee->echelon ?? '-' }}</span>
                     </div>
                 </td>
                 <td style="border: none; text-align: right;">
                     <div class="data-row">
                         <span style="display:inline-block; width: 150px;">تاريخ التعيين في الرتبة :</span>
-                        <span class="value">{{ $employee->date_recrutement ?? '' }}</span>
+                        <span class="value">{{ $employee->date_recrutement ?? '-' }}</span>
                     </div>
                 </td>
             </tr>
@@ -207,35 +207,35 @@
 
         <div class="data-row" style="margin-top: 10px; padding: 10px; background-color: #f9f9f9; border-right: 4px solid #003366;">
             <span style="font-weight: bold; margin-left: 20px;">الوضعية الجديدة المقترحة :</span>
-            <span class="label" style="width: 80px;">الدرجة:</span> <span class="value" style="color: #006241; font-weight: bold;">{{ $record->nouveau_grade ?? '' }}</span>
-            <span class="label" style="width: 80px; margin-right: 20px;">الرتبة:</span> <span class="value" style="color: #006241; font-weight: bold;">{{ $record->nouvel_echelon ?? '' }}</span>
-            <span class="label" style="width: 100px; margin-right: 20px;">تاريخ المفعول:</span> <span class="value" style="color: #006241; font-weight: bold;">{{ isset($record->date_effet) ? date('d/m/Y', strtotime($record->date_effet)) : '' }}</span>
+            <span class="label" style="width: 80px;">الدرجة:</span> <span class="value" style="color: #006241; font-weight: bold;">{{ $avancement->new_grade ?? '-' }}</span>
+            <span class="label" style="width: 80px; margin-right: 20px;">الرتبة:</span> <span class="value" style="color: #006241; font-weight: bold;">{{ $avancement->echelon ?? '-' }}</span>
+            <span class="label" style="width: 100px; margin-right: 20px;">تاريخ المفعول:</span> <span class="value" style="color: #006241; font-weight: bold;">{{ isset($avancement->date_effet) ? date('d/m/Y', strtotime($avancement->date_effet)) : '-' }}</span>
         </div>
         
         <div class="data-row" style="margin-top: 10px;">
             <span class="label">مقر التعيين (Affectation)</span> : 
-            <span class="value">{{ $employee->direction ?? '' }}</span>
+            <span class="value">{{ $employee->direction ?? '-' }}</span>
         </div>
     </div>
 
     <div class="opinion-section">
         <span class="opinion-title">- بيان مفصل عن المهام التي يقوم بها المعني(ة) بالأمر.</span>
-        <div style="font-size: 12px; color: #333; min-height: 50px; border-bottom: 1px dotted #ccc;">{{ $acte->description ?? '' }}</div>
+        <div style="font-size: 12px; color: #333; min-height: 50px; border-bottom: 1px dotted #ccc;">{{ $acte->description ?? '-' }}</div>
     </div>
 
     <div class="opinion-section">
         <span class="opinion-title">- رأي الرئيس المباشر حول ترقية المعني(ة) بالأمر في الدرجة.</span>
-        <div style="font-size: 12px; color: #333; min-height: 50px; border-bottom: 1px dotted #ccc;">{{ $record->avis_superieur ?? 'موافق' }}</div>
+        <div style="font-size: 12px; color: #333; min-height: 50px; border-bottom: 1px dotted #ccc;">موافق</div>
     </div>
 
     <div class="opinion-section">
         <span class="opinion-title">- نظرية رئيس القسم حول ترقية المعني(ة) بالأمر في الدرجة.</span>
-        <div style="font-size: 12px; color: #333; min-height: 50px; border-bottom: 1px dotted #ccc;">{{ $record->avis_chef ?? 'موافق' }}</div>
+        <div style="font-size: 12px; color: #333; min-height: 50px; border-bottom: 1px dotted #ccc;">موافق</div>
     </div>
 
     <div class="opinion-section">
         <span class="opinion-title">- النظرة العامة للسيد الوالي أو العامل حول ترقية المعني(ة) بالأمر في الدرجة.</span>
-        <div style="font-size: 12px; color: #333; min-height: 50px; border-bottom: 1px dotted #ccc;">{{ $record->avis_admin ?? 'موافق' }}</div>
+        <div style="font-size: 12px; color: #333; min-height: 50px; border-bottom: 1px dotted #ccc;">موافق</div>
     </div>
 
     <div class="footer-checkboxes">
@@ -250,7 +250,7 @@
     </div>
 
     <div style="text-align: center; margin-top: 30px;">
-        <span style="margin-left: 20px;">حرر بـ: العرائش بتاريخ: {{ $acte->issue_date->format('d/m/Y') }}</span>
+        <span style="margin-left: 20px;">حرر بـ: العرائش بتاريخ: {{ $acte->issue_date ? $acte->issue_date->format('d/m/Y') : '-' }}</span>
     </div>
 
     <div class="signature-area">

@@ -34,15 +34,15 @@
             </td>
             <td style="width: 50%; vertical-align: top; text-align: left; line-height: 1.5; border: none;">
                 <p style="margin: 3px 0;">الانتساب المالي : م.ع.</p>
-                <p style="margin: 3px 0;">رقم التأجير : {{ $fonctionnaire->matricule ?? '................' }}</p>
-                <p style="margin: 3px 0;">رقم ب.و.ت : {{ $fonctionnaire->cnie ?? '................' }}</p>
-                <p style="margin: 3px 0;">الرقم ا.ص.مت : {{ $fonctionnaire->matricule ?? '................' }}</p>
+                <p style="margin: 3px 0;">رقم التأجير : {{ $fonctionnaire->matricule ?? '-' }}</p>
+                <p style="margin: 3px 0;">رقم ب.و.ت : {{ $fonctionnaire->cnie ?? '-' }}</p>
+                <p style="margin: 3px 0;">الرقم ا.ص.مت : {{ $fonctionnaire->matricule ?? '-' }}</p>
             </td>
         </tr>
     </table>
 
     <div class="meta">
-        <p>قرار رقم: {{ $nomination->acte_reference ?? $acte->reference ?? '……' }} بتاريخ: {{ $nomination->date_decision ?? $date_formatted ?? '……' }}</p>
+        <p>قرار رقم: {{ $nomination->reference ?? $acte->reference ?? '-' }} بتاريخ: {{ $nomination->date_acte ?? $date_formatted ?? '-' }}</p>
     </div>
 
     <div class="intro">إن رئيس جماعة العرائش،</div>
@@ -57,8 +57,8 @@
         <li>• بناء على المرسوم رقم 2.05.1367 الصادر بتاريخ 29 شوال 1426 (02.12.2005) بتحديد مسطرة تنقيط وتقييم موظفي الإدارات العمومية؛</li>
         <li>• بناء على المرسوم الملكي رقم 62.68 الصادر في 19 صفر 1388 (17.05.1968) المحدد للمقتضيات المطبقة على الموظفين المتدربين بالإدارات العمومية؛</li>
         <li>• بناء على القانون رقم 011.71 الصادر في 12 ذي القعدة 1391 (30.12.1971) المحدث بموجبه نظام المعاشات المدنية كما وقع تغييره وتتميمه؛</li>
-        <li>• بناء على الشهادات والمؤهلات التي حصل عليها السيد(ة) {{ $fonctionnaire->prenom ?? '…' }} {{ $fonctionnaire->nom ?? '…' }}؛</li>
-        <li>• وبناء على تقرير شروع المعنية بالأمر في العمل بجماعة العرائش بتاريخ {{ $nomination->date_prise_service ?? $contenu['date_prise_service'] ?? '................' }}؛</li>
+        <li>• بناء على الشهادات والمؤهلات التي حصل عليها السيد(ة) {{ $fonctionnaire->prenom ?? '-' }} {{ $fonctionnaire->nom ?? '-' }}؛</li>
+        <li>• وبناء على تقرير شروع المعنية بالأمر في العمل بجماعة العرائش بتاريخ {{ $nomination->date_effet ?? '-' }}؛</li>
     </ul>
 
     <div class="decision-title">يقرر:</div>
@@ -66,14 +66,14 @@
     <div class="article">
         <span class="article-title">الفصل الأول:</span>
         <p>
-            يبتدئ من {{ $nomination->date_effet ?? $contenu['date_effet'] ?? $date_formatted ?? '................' }}
-            {{ $nomination->type_nomination === 'nomination' ? 'تعيين' : ($nomination->type_nomination === 'promotion' ? 'ترقية' : 'تعيين') }}
-            السيد(ة) {{ $fonctionnaire->prenom ?? '…' }} {{ $fonctionnaire->nom ?? '…' }}
+            يبتدئ من {{ $nomination->date_effet ?? '-' }}
+            {{ ($nomination->type_nomination ?? 'nomination') === 'promotion' ? 'ترقية' : 'تعيين' }}
+            السيد(ة) {{ $fonctionnaire->prenom ?? '-' }} {{ $fonctionnaire->nom ?? '-' }}
             بجماعة العرائش في الدرجة الجديدة:
-            {{ $nomination->nouveau_grade ?? $fonctionnaire->grade ?? '................' }}،
-            {{ $nomination->nouvel_echelon ? 'الرتبة ' . $nomination->nouvel_echelon : '................' }}،
-            الرقم الاستدلالي {{ $nomination->indice ?? $contenu['indice'] ?? '................' }}،
-            وذلك بـ {{ $nomination->service ?? $fonctionnaire->direction ?? '................' }}.
+            {{ $nomination->new_grade ?? $fonctionnaire->grade ?? '-' }}،
+            {{ ($nomination->echelon) ? 'الرتبة ' . ($nomination->echelon) : '-' }}،
+            الرقم الاستدلالي {{ $nomination->indice ?? '-' }}،
+            وذلك بـ {{ $nomination->department ?? $fonctionnaire->direction ?? '-' }}.
         </p>
     </div>
 
@@ -88,7 +88,7 @@
     </div>
 
     <div class="signature">
-        <p>حرر بالعرائش في: {{ $nomination->date_redaction ?? $date_formatted }}</p>
+        <p>حرر بالعرائش في: {{ $nomination->date_redaction ?? $date_formatted ?? '-' }}</p>
         <p>رئيس جماعة العرائش</p>
     </div>
 </body>

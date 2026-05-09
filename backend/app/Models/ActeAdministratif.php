@@ -18,6 +18,8 @@ class ActeAdministratif extends Model
         'issue_date',
         'generated_by',
         'description',
+        'record_type',
+        'record_id',
     ];
 
     protected $casts = [
