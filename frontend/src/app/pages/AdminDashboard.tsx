@@ -235,13 +235,7 @@ export default function AdminDashboard() {
   }, [arretes]);
 
   const handleLogout = async () => {
-    try {
-      await authApi.logout();
-    } catch (e) {
-      console.error('Logout error:', e);
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-    }
+    await authApi.logout();
     navigate('/login/admin', { replace: true });
   };
 
@@ -355,6 +349,7 @@ export default function AdminDashboard() {
     try {
       const payload = {
         employee_id: newArrete.employeeId,
+        title: newArrete.title,
         reference: newArrete.data.reference,
         description: newArrete.description,
         data: newArrete.data

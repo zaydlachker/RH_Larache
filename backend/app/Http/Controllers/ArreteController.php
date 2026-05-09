@@ -23,12 +23,18 @@ class ArreteController extends Controller
 
     public function generate(Request $request, $type)
     {
-        // For the purpose of this demo, we use the first admin if not authenticated
+        $request->validate([
+            'employee_id' => 'required|exists:fonctionnaires,id',
+        ]);
+
         $admin = auth()->user() ?? User::where('role', 'admin')->first();
         
-        $pdf = $this->arreteService->createAndGenerate($type, $request->all(), $admin);
+        $result = $this->arreteService->createAndGenerate($type, $request->all(), $admin);
         
-        return $pdf->download($type . '.pdf');
+        $acte = $result['acte'];
+        $pdf = $result['pdf'];
+        
+        return $pdf->download("{$type}_{$acte->reference}.pdf");
     }
     public function download($id)
     {

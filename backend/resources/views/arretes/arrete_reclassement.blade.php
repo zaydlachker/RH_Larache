@@ -105,16 +105,16 @@
             </td>
             <td style="width: 50%; vertical-align: top; text-align: left; line-height: 1.5; border: none;">
                 <p style="margin: 3px 0;">الانتساب المالي : م.ع.</p>
-                <p style="margin: 3px 0;">رقم التأجير : {{ $fonctionnaire->matricule ?? '................' }}</p>
-                <p style="margin: 3px 0;">رقم ب.و.ت : {{ $fonctionnaire->cnie ?? '................' }}</p>
-                <p style="margin: 3px 0;">الرقم ا.ص.م.ت : {{ $fonctionnaire->matricule ?? '................' }}</p>
+                <p style="margin: 3px 0;">رقم التأجير : {{ $employee->matricule ?? '................' }}</p>
+                <p style="margin: 3px 0;">رقم ب.و.ت : {{ $employee->cnie ?? '................' }}</p>
+                <p style="margin: 3px 0;">الرقم ا.ص.م.ت : {{ $employee->matricule ?? '................' }}</p>
             </td>
         </tr>
     </table>
 
     {{-- ═══ عنوان البطاقة ═══ --}}
     <div class="title">
-        بطاقة الترشيح لأجل الترقي بالاختيار إلى درجة {{ $reclassement->nouveau_grade ?? '..................' }} برسم سنة {{ now()->format('Y') }}
+        بطاقة الترشيح لأجل الترقي بالاختيار إلى درجة {{ $record->nouveau_grade ?? '..................' }} برسم سنة {{ date('Y') }}
     </div>
     <div class="subtitle">
         (نموذج خاص بهيئة متصرف وزارة الداخلية)
@@ -125,36 +125,36 @@
 
     <div class="field-row">
         <span class="field-label">الاسم الشخصي : </span>
-        {{ $fonctionnaire->prenom ?? '............................................' }}
+        {{ $employee->prenom ?? '............................................' }}
     </div>
     <div class="field-row">
         <span class="field-label">الاسم العائلي : </span>
-        {{ $fonctionnaire->nom ?? '............................................' }}
+        {{ $employee->nom ?? '............................................' }}
     </div>
     <div class="field-row">
         <span class="field-label">تاريخ ومكان الازدياد : </span>
-        {{ $fonctionnaire->date_naissance ?? '................' }}
-        بـ {{ $fonctionnaire->lieu_naissance ?? '................' }}
+        {{ $employee->date_naissance ?? '................' }}
+        بـ {{ $employee->lieu_naissance ?? '................' }}
     </div>
     <div class="field-row">
         <span class="field-label">الحالة العائلية : </span>
-        {{ $fonctionnaire->situation_familiale ?? '............................................' }}
+        {{ $employee->situation_familiale ?? '............................................' }}
     </div>
     <div class="field-row">
         <span class="field-label">رقم بطاقة التعريف الوطنية : </span>
-        {{ $fonctionnaire->cnie ?? '............................................' }}
+        {{ $employee->cnie ?? '............................................' }}
     </div>
     <div class="field-row">
         <span class="field-label">رقم الهاتف : </span>
-        {{ $fonctionnaire->telephone ?? '............................................' }}
+        {{ $employee->telephone ?? '............................................' }}
     </div>
     <div class="field-row">
         <span class="field-label">البريد الإلكتروني : </span>
-        {{ $fonctionnaire->email ?? '............................................' }}
+        {{ $employee->email ?? '............................................' }}
     </div>
     <div class="field-row">
         <span class="field-label">رقم التأجير : </span>
-        {{ $fonctionnaire->matricule ?? '............................................' }}
+        {{ $employee->matricule ?? '............................................' }}
     </div>
 
     {{-- ═══ 2- المعطيات الإدارية ═══ --}}
@@ -165,33 +165,33 @@
             <td style="width: 55%;">
                 <div class="field-row">
                     <span class="field-label">تاريخ التوظيف : </span>
-                    {{ $fonctionnaire->recruitment_date ?? $fonctionnaire->date_recrutement ?? '................' }}
+                    {{ $employee->date_recrutement ?? '................' }}
                 </div>
                 <div class="field-row">
                     <span class="field-label">الدرجة الحالية : </span>
-                    {{ $reclassement->ancien_grade ?? $fonctionnaire->grade ?? '................' }}
+                    {{ $record->ancien_grade ?? $employee->grade ?? '................' }}
                 </div>
                 <div class="field-row">
                     <span class="field-label">الرتبة الحالية : </span>
-                    {{ $reclassement->ancien_echelon ?? $fonctionnaire->echelon ?? '......' }}
+                    {{ $employee->echelon ?? '......' }}
                 </div>
                 <div class="field-row">
                     <span class="field-label">مقر التعيين : </span>
-                    {{ $fonctionnaire->direction ?? 'جماعة العرائش' }}
+                    {{ $employee->direction ?? 'جماعة العرائش' }}
                 </div>
             </td>
             <td style="width: 45%;">
                 <div class="field-row">
                     <span class="field-label">تاريخ المفعول : </span>
-                    {{ $reclassement->date_effet ?? '................' }}
+                    {{ $record->date_effet ?? '................' }}
                 </div>
                 <div class="field-row">
                     <span class="field-label">الدرجة الجديدة : </span>
-                    {{ $reclassement->nouveau_grade ?? '................' }}
+                    {{ $record->nouveau_grade ?? '................' }}
                 </div>
                 <div class="field-row">
                     <span class="field-label">الرتبة الجديدة : </span>
-                    {{ $reclassement->nouvel_echelon ?? '................' }}
+                    .......
                 </div>
             </td>
         </tr>
@@ -202,7 +202,7 @@
         - بيان مفصل عن المهام التي يقوم بها المعني(ة) بالأمر:
     </div>
     <div style="font-size: 11px; padding: 5px; border-bottom: 1px dotted #ccc;">
-        {{ $reclassement->description_missions ?? '..........................................................................................................................................' }}
+        {{ $acte->description ?? '..........................................................................................................................................' }}
     </div>
 
     {{-- ═══ رأي الرئيس المباشر ═══ --}}
@@ -210,41 +210,25 @@
         - رأي الرئيس المباشر حول ترقية المعني(ة) بالأمر في الدرجة:
     </div>
     <div style="font-size: 11px; padding: 5px; border-bottom: 1px dotted #ccc;">
-        {{ $reclassement->avis_superieur ?? '..........................................................................................................................................' }}
-    </div>
-
-    {{-- ═══ نظرية رئيس القسم ═══ --}}
-    <div class="opinion-section">
-        - نظرية رئيس القسم حول ترقية المعني(ة) بالأمر في الدرجة:
-    </div>
-    <div style="font-size: 11px; padding: 5px; border-bottom: 1px dotted #ccc;">
-        {{ $reclassement->avis_chef ?? '..........................................................................................................................................' }}
-    </div>
-
-    {{-- ═══ النظرية العامة ═══ --}}
-    <div class="opinion-section">
-        - النظرية العامة للسيد الوالي أو العامل:
-    </div>
-    <div style="font-size: 11px; padding: 5px; border-bottom: 1px dotted #ccc;">
-        {{ $reclassement->avis_admin ?? '..........................................................................................................................................' }}
+        موافق
     </div>
 
     {{-- ═══ القرار ═══ --}}
     <div class="decision-box">
         <span class="decision-item">
-            <span class="checkbox" style="background-color: {{ ($reclassement->decision ?? '') === 'propose' ? '#000' : 'transparent' }}"></span>
+            <span class="checkbox" style="background-color: #000"></span>
             1/ يُقترح ترقية المعني(ة) بالأمر في الدرجة.
         </span>
         <span class="decision-item">
-            <span class="checkbox" style="background-color: {{ ($reclassement->decision ?? '') === 'no_propose' ? '#000' : 'transparent' }}"></span>
+            <span class="checkbox" style="background-color: transparent"></span>
             2/ لا يُقترح ترقية المعني(ة) بالأمر في الدرجة.
         </span>
     </div>
 
     {{-- ═══ التوقيع ═══ --}}
     <div class="signature">
-        <p>{{ $reclassement->signataire ?? 'رئيس جماعة العرائش' }}</p>
-        <p style="margin-top: 5px;">حرر بالعرائش بتاريخ: {{ $reclassement->date_redaction ?? $date_formatted ?? '................' }}</p>
+        <p>رئيس جماعة العرائش</p>
+        <p style="margin-top: 5px;">حرر بالعرائش بتاريخ: {{ $acte->issue_date->format('d/m/Y') }}</p>
     </div>
 
 </body>

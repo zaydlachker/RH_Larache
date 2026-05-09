@@ -11,6 +11,7 @@ class ActeAdministratif extends Model
         'candidat_id',
         'fonctionnaire_id',
         'type',
+        'title',
         'data',
         'reference',
         'file_path',
@@ -32,6 +33,11 @@ class ActeAdministratif extends Model
     public function fonctionnaire(): BelongsTo
     {
         return $this->belongsTo(Fonctionnaire::class);
+    }
+
+    public function record()
+    {
+        return $this->morphTo();
     }
 
     public function generator(): BelongsTo

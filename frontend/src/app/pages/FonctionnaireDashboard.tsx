@@ -12,6 +12,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { api, authApi } from '../lib/api';
 
 export default function FonctionnaireDashboard() {
   const navigate = useNavigate();
@@ -94,41 +95,45 @@ export default function FonctionnaireDashboard() {
 
   useEffect(() => {
     if (!user || user.role !== 'fonctionnaire') {
-      navigate('/fonctionnaire', { replace: true });
+      navigate('/login/fonctionnaire', { replace: true });
       return;
     }
 
-    // Fetch real professional data
-    fetch(`http://localhost:8000/fonctionnaires`)
-      .then(res => res.json())
-      .then(data => {
-        const myProfile = data.find((f: any) => f.user.email === user.email);
+    const fetchData = async () => {
+      try {
+        // Fetch only my profile using the scoped endpoint
+        const response = await api.get('/fonctionnaire/profile');
+        const myProfile = response.data;
+        
         if (myProfile) {
           setProfile(myProfile);
           
-          fetch('http://localhost:8000/arretes')
-            .then(res => res.json())
-            .then(arretes => {
-              const myArretes = arretes.filter((a: any) => a.fonctionnaire_id === myProfile.id);
-              
-              setDocuments(myArretes.map((a: any) => ({
-                id: a.id,
-                title: a.title,
-                type: 'Arrêté',
-                date: a.issue_date,
-                reference: a.reference
-              })));
+          // Fetch arretes - note that the web route /arretes is used here as per ArreteController
+          const arretesRes = await fetch('http://localhost:8000/arretes');
+          const arretes = await arretesRes.json();
+          const myArretes = arretes.filter((a: any) => a.fonctionnaire_id === myProfile.id);
+          
+          setDocuments(myArretes.map((a: any) => ({
+            id: a.id,
+            title: a.title,
+            type: 'Arrêté',
+            date: a.issue_date,
+            reference: a.reference
+          })));
 
-              setCarriere(myArretes.map((a: any) => ({
-                id: a.id,
-                title: a.title,
-                date: a.issue_date,
-                description: a.description || `Décision administrative réf: ${a.reference}`
-              })).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-            });
+          setCarriere(myArretes.map((a: any) => ({
+            id: a.id,
+            title: a.title,
+            date: a.issue_date,
+            description: a.description || `Décision administrative réf: ${a.reference}`
+          })).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()));
         }
-      })
-      .catch(err => console.error('Error fetching real data:', err));
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      }
+    };
+
+    fetchData();
 
     const stored = JSON.parse(localStorage.getItem('mes_actes') || '[]');
     setDossiers(stored.length > 0 ? stored : [
@@ -139,10 +144,9 @@ export default function FonctionnaireDashboard() {
 
   if (!user || user.role !== 'fonctionnaire') return null;
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    navigate('/login', { replace: true });
+  const handleLogout = async () => {
+    await authApi.logout();
+    navigate('/login/fonctionnaire', { replace: true });
   };
 
   const getStatusBadge = (status: string) => {

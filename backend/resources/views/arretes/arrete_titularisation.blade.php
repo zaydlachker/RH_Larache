@@ -106,15 +106,15 @@
             </td>
             <td class="header-right">
                 الانتساب المالي : م.ع.<br>
-                رقم التأجير : {{ $fonctionnaire->matricule ?? '........' }}<br>
-                رقم ب.و.ت : {{ $fonctionnaire->cnie ?? '........' }}<br>
-                الرقم ا.ص.م.ت : {{ $fonctionnaire->matricule ?? '........' }}
+                رقم التأجير : {{ $employee->matricule ?? '........' }}<br>
+                رقم ب.و.ت : {{ $employee->cnie ?? '........' }}<br>
+                الرقم ا.ص.م.ت : {{ $employee->matricule ?? '........' }}
             </td>
         </tr>
     </table>
 
     <div class="title">
-        قرار رقم {{ $titularisation->reference_acte ?? $acte->reference ?? '........' }} بتاريخ {{ $titularisation->date_acte ?? $date_formatted ?? '........' }}<br>
+        قرار رقم {{ $acte->reference ?? '........' }} بتاريخ {{ $acte->issue_date->format('d/m/Y') }}<br>
         إن رئيس جماعة العرائش
     </div>
 
@@ -126,20 +126,20 @@
         <li>• بناء على المرسوم رقم 2.62.344 الصادر بتاريخ 15 صفر 1383 (1963.07.08) بتحديد سلالم الأجور وشروط الترقي في الرتبة والدرجة.</li>
         <li>• بناء على المرسوم رقم 2.05.1367 الصادر بتاريخ 29 شوال 1426 (2005.12.02) بتحديد مسطرة تنقيط وتقييم موظفي الإدارات العمومية.</li>
         <li>• بناء على المرسوم الملكي رقم 62.68 الصادر في 19 صفر 1388 (1968.05.17) المحدد للمقتضيات المطبقة على الموظفين المتمرنين بالإدارات العمومية.</li>
-        <li>• بناء على تقرير التقييم الإيجابي للسيد(ة) {{ $fonctionnaire->prenom ?? '......' }} {{ $fonctionnaire->nom ?? '......' }} خلال فترة التمرين.</li>
+        <li>• بناء على تقرير التقييم الإيجابي للسيد(ة) {{ $employee->prenom ?? '......' }} {{ $employee->nom ?? '......' }} خلال فترة التمرين.</li>
     </ul>
 
     <div class="decision">يقــــــرر</div>
 
     <div class="article">
         <span class="article-title">الفصل الأول:</span>
-        يتم ترسيم السيد(ة) {{ $fonctionnaire->prenom ?? '......' }} {{ $fonctionnaire->nom ?? '......' }} المزداد(ة) بتاريخ {{ $fonctionnaire->date_naissance ?? '........' }} 
-        وذلك ابتداء من {{ $titularisation->date_effet ?? '........' }} 
-        بعد قضاء فترة التدريب المحددة في {{ $titularisation->duree_stage ?? '12 شهر' }}
-        في درجة {{ $titularisation->new_grade ?? $fonctionnaire->grade ?? '........' }} السلم
-        {{ $titularisation->new_echelle ?? '...' }} الرتبة
-        {{ $titularisation->new_echelon ?? '...' }} الرقم الاستدلالي
-        {{ $titularisation->new_indice ?? '...' }}.
+        يتم ترسيم السيد(ة) {{ $employee->prenom ?? '......' }} {{ $employee->nom ?? '......' }} المزداد(ة) بتاريخ {{ $employee->date_naissance ?? '........' }} 
+        وذلك ابتداء من {{ $record->date_effet ?? '........' }} 
+        بعد قضاء فترة التدريب المحددة في 12 شهر
+        في درجة {{ $record->grade ?? $employee->grade ?? '........' }} السلم
+        ....... الرتبة
+        ....... الرقم الاستدلالي
+        .......
     </div>
 
     <div class="article">
@@ -159,8 +159,8 @@
             <th colspan="4" class="section-header">الوضعية الجديدة</th>
         </tr>
         <tr>
-            <th colspan="4">الدرجة: {{ $titularisation->old_grade ?? $fonctionnaire->grade ?? '...' }}</th>
-            <th colspan="4">الدرجة: {{ $titularisation->new_grade ?? $fonctionnaire->grade ?? '...' }}</th>
+            <th colspan="4">الدرجة: {{ $employee->grade ?? '...' }}</th>
+            <th colspan="4">الدرجة: {{ $record->grade ?? $employee->grade ?? '...' }}</th>
         </tr>
         <tr>
             <th>السلم</th>
@@ -173,21 +173,21 @@
             <th>تاريخ المفعول</th>
         </tr>
         <tr>
-            <td>{{ $titularisation->old_echelle ?? '...' }}</td>
-            <td>{{ $titularisation->old_echelon ?? $fonctionnaire->echelon ?? '...' }}</td>
-            <td>{{ $titularisation->old_indice ?? '...' }}</td>
-            <td>{{ $titularisation->date_recrutement ?? $fonctionnaire->recruitment_date ?? '........' }}</td>
-            <td>{{ $titularisation->duree_stage ?? '12 شهر' }}</td>
-            <td>{{ $titularisation->new_echelle ?? '...' }}</td>
-            <td>{{ $titularisation->new_echelon ?? '...' }}</td>
-            <td>{{ $titularisation->new_indice ?? '...' }}</td>
-            <td>{{ $titularisation->date_effet ?? '........' }}</td>
+            <td>...</td>
+            <td>{{ $employee->echelon ?? '...' }}</td>
+            <td>...</td>
+            <td>{{ $employee->date_recrutement ?? '........' }}</td>
+            <td>12 شهر</td>
+            <td>...</td>
+            <td>...</td>
+            <td>...</td>
+            <td>{{ $record->date_effet ?? '........' }}</td>
         </tr>
     </table>
 
     <div class="signature" style="margin-top: 40px;">
-        <p>حرر بالعرائش في: {{ $titularisation->date_acte ?? $date_formatted }}</p>
-        <p>{{ $titularisation->signataire ?? 'رئيس جماعة العرائش' }}</p>
+        <p>حرر بالعرائش في: {{ $acte->issue_date->format('d/m/Y') }}</p>
+        <p>رئيس جماعة العرائش</p>
     </div>
 </body>
 </html>

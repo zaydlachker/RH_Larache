@@ -7,24 +7,23 @@ import {
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
+import { authApi, getStoredUser } from '../lib/api';
 
 export default function StagiaireDashboard() {
   const navigate = useNavigate();
-  const userStr = localStorage.getItem('user');
-  const user = userStr ? JSON.parse(userStr) : null;
+  const user = getStoredUser();
 
   useEffect(() => {
     if (!user || user.role !== 'stagiaire') {
-      navigate('/stagiaire', { replace: true });
+      navigate('/login/stagiaire', { replace: true });
     }
   }, [user, navigate]);
 
   if (!user || user.role !== 'stagiaire') return null;
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    navigate('/login', { replace: true });
+  const handleLogout = async () => {
+    await authApi.logout();
+    navigate('/login/stagiaire', { replace: true });
   };
 
   return (

@@ -27,7 +27,8 @@ class FonctionnaireController extends Controller
             });
         }
         
-        $fonctionnaires = $query->with('user')->orderBy('created_at', 'desc')->paginate(15);
+        // Return collection instead of pagination to match frontend expectations
+        $fonctionnaires = $query->with('user')->orderBy('created_at', 'desc')->get();
         
         return response()->json($fonctionnaires, 200);
     }
@@ -63,13 +64,14 @@ class FonctionnaireController extends Controller
             $user = \App\Models\User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'password' => $validated['password'],
+                'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
                 'role' => 'fonctionnaire',
             ]);
 
             $fonctionnaireData = array_merge($validated, [
                 'user_id' => $user->id,
-                'position' => $validated['position'] ?? $validated['grade']
+                'position' => $validated['position'] ?? $validated['grade'],
+                'salary' => $validated['salary'] ?: 0
             ]);
             
             $fonctionnaire = Fonctionnaire::create($fonctionnaireData);
@@ -114,5 +116,16 @@ class FonctionnaireController extends Controller
         $fonctionnaire->delete();
         
         return response()->json(['message' => 'Fonctionnaire deleted successfully'], 200);
+    }
+    public function myProfile(Request $request)
+    {
+        $user = $request->user();
+        $fonctionnaire = Fonctionnaire::where('user_id', $user->id)->with('user')->first();
+        
+        if (!$fonctionnaire) {
+            return response()->json(['message' => 'Profile not found'], 404);
+        }
+        
+        return response()->json($fonctionnaire, 200);
     }
 }

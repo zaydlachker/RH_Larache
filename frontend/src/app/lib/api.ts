@@ -89,17 +89,27 @@ export const authApi = {
 
   logout: async (): Promise<void> => {
     try {
-      await api.post('/logout');
+      // Attempt to notify backend
+      await api.post('/logout').catch(() => {});
     } catch (e) {
-      // ignore network errors during logout
+      // ignore
     }
+    
+    // Comprehensive storage cleanup
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('role'); // Just in case it was stored separately
+    
+    // Optional: clear other non-auth data if needed, but usually we keep preferences
+    
     try {
       window.dispatchEvent(new CustomEvent('auth:logout'));
     } catch (e) {
-      window.location.href = '/login';
+      console.error('Logout event error:', e);
     }
+    
+    // Clear any potential session cookies if possible (though we use token)
+    document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   },
 
   me: async (): Promise<User> => {

@@ -16,8 +16,15 @@ export function ProfilePage() {
   });
 
   const handleLogout = async () => {
-    await authApi.logout();
-    navigate('/');
+    try {
+      await authApi.logout();
+      // PublicLayout listens to auth:logout and will navigate to /login,
+      // but we can also force it here to be sure.
+      navigate('/login', { replace: true });
+    } catch (err) {
+      console.error('Logout error:', err);
+      navigate('/login', { replace: true });
+    }
   };
 
   const handleEdit = () => {

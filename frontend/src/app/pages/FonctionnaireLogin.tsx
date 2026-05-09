@@ -5,7 +5,7 @@ import { Label } from '../components/ui/label';
 import { Button } from '../components/ui/button';
 import { Landmark, Lock, Mail, Loader2, ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { saveAuth } from '../lib/api';
+import { saveAuth, authApi } from '../lib/api';
 
 export default function FonctionnaireLogin() {
   const navigate = useNavigate();
@@ -14,27 +14,30 @@ export default function FonctionnaireLogin() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    // Check localStorage "users" for registered accounts
-    const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
-    const existingUser = storedUsers.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
+    try {
+      const response = await authApi.login(email, password);
+      
+      // Verification of role
+      const role = String(response.user.role).toLowerCase();
+      if (role !== 'fonctionnaire') {
+        setError("Accès refusé. Ce compte n'est pas un compte fonctionnaire.");
+        return;
+      }
 
-    if (existingUser) {
-      // Allow access and set session
-      saveAuth({
-        user: { ...existingUser, role: "fonctionnaire" },
-        token: "fonc_demo_token"
-      });
+      saveAuth(response);
       navigate('/dashboard/fonctionnaire', { replace: true });
-    } else {
-      setError("Compte non trouvé. Veuillez contacter l'administration.");
+    } catch (err: any) {
+      console.error('Login error:', err);
+      const msg = err.response?.data?.message || err.response?.data?.errors?.password?.[0] || "Identifiants incorrects ou problème de connexion.";
+      setError(msg);
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   return (

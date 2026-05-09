@@ -10,6 +10,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
+import { authApi, getStoredUser } from '../lib/api';
 
 // --- MOCK DATA FOR PRESIDENTIAL CONTROL ---
 const ALL_USERS = [
@@ -31,8 +32,7 @@ export default function PresidentDashboard() {
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   // Auth Guard
-  const userStr = localStorage.getItem('user');
-  const loggedInUser = userStr ? JSON.parse(userStr) : null;
+  const loggedInUser = getStoredUser();
 
   useEffect(() => {
     if (!loggedInUser || loggedInUser.role !== 'president') {
@@ -45,9 +45,8 @@ export default function PresidentDashboard() {
 
   if (!loggedInUser || loggedInUser.role !== 'president') return null;
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    await authApi.logout();
     navigate('/login/president', { replace: true });
   };
 

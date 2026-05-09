@@ -35,6 +35,7 @@ Route::prefix('v1')->group(function () {
     Route::get('candidats/{candidat}/candidatures', [CandidatureController::class, 'byCandidat'])->middleware('auth:sanctum');
 
     // Fonctionnaire Routes
+    Route::get('fonctionnaire/profile', [FonctionnaireController::class, 'myProfile'])->middleware(['auth:sanctum', 'role:fonctionnaire']);
     Route::apiResource('fonctionnaires', FonctionnaireController::class)
         ->middleware(['auth:sanctum', 'role:admin'])
         ->parameters(['fonctionnaires' => 'fonctionnaire']);
