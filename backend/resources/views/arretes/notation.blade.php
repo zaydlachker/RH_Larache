@@ -3,13 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <title>بطاقة التعريف الفردية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
     <style>
+        @font-face {
+            font-family: 'Amiri';
+            font-style: normal;
+            font-weight: 400;
+            src: url(https://fonts.gstatic.com/s/amiri/v26/J7afpE9w7Ox9pTglKq7S.ttf) format('truetype');
+        }
       @page {
         margin: 10mm;
       }
       body {
-        font-family: 'dejavusans', Arial, sans-serif;
+        font-family: 'DejaVu Sans', sans-serif;
         direction: rtl;
+        text-align: right;
         margin: 0;
       }
       .container {

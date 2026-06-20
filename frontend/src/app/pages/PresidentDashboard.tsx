@@ -10,6 +10,8 @@ import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
+import { Toaster, toast } from 'sonner';
 import { authApi, getStoredUser } from '../lib/api';
 
 // --- MOCK DATA FOR PRESIDENTIAL CONTROL ---
@@ -30,6 +32,9 @@ export default function PresidentDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
+  const [newAdminName, setNewAdminName] = useState('');
+  const [newAdminEmail, setNewAdminEmail] = useState('');
 
   // Auth Guard
   const loggedInUser = getStoredUser();
@@ -96,6 +101,91 @@ export default function PresidentDashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] dark:bg-slate-950 font-sans">
+      <Toaster position="top-center" richColors />
+      <Dialog open={isAddAdminOpen} onOpenChange={setIsAddAdminOpen}>
+        <DialogContent className="sm:max-w-[425px] rounded-3xl p-6 bg-white dark:bg-slate-900 border-none shadow-2xl">
+          <DialogHeader className="mb-4">
+            <div className="mx-auto w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+              <UserPlus className="h-6 w-6 text-red-600 dark:text-red-400" />
+            </div>
+            <DialogTitle className="text-2xl font-black text-center text-slate-900 dark:text-white tracking-tight">Ajouter un Admin</DialogTitle>
+            <DialogDescription className="text-center text-slate-500 mt-2">
+              Créez un nouveau compte administrateur avec des privilèges complets.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-6 py-4">
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                Nom Complet
+              </label>
+              <Input
+                id="name"
+                placeholder="Ex: John Doe"
+                value={newAdminName}
+                onChange={(e) => setNewAdminName(e.target.value)}
+                className="h-12 rounded-xl bg-slate-50 dark:bg-slate-800 border-none shadow-inner"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                Adresse Email
+              </label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="admin@example.com"
+                value={newAdminEmail}
+                onChange={(e) => setNewAdminEmail(e.target.value)}
+                className="h-12 rounded-xl bg-slate-50 dark:bg-slate-800 border-none shadow-inner"
+              />
+            </div>
+          </div>
+          <DialogFooter className="mt-4 gap-3 sm:gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsAddAdminOpen(false)}
+              className="h-12 rounded-xl border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 w-full sm:w-auto"
+            >
+              Annuler
+            </Button>
+            <Button 
+              onClick={() => {
+                if (!newAdminName.trim() || !newAdminEmail.trim()) {
+                  toast.error('Veuillez remplir tous les champs', {
+                    description: 'Le nom et l\'email sont requis pour créer un admin.'
+                  });
+                  return;
+                }
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newAdminEmail)) {
+                  toast.error('Format d\'email invalide', {
+                    description: 'Veuillez saisir une adresse email valide.'
+                  });
+                  return;
+                }
+                setUsers([{ 
+                  id: Date.now(), 
+                  name: newAdminName, 
+                  email: newAdminEmail, 
+                  role: 'admin', 
+                  avatar: newAdminName.substring(0,2).toUpperCase(), 
+                  status: 'active', 
+                  grade: 'Administrateur', 
+                  service: 'Administration' 
+                }, ...users]);
+                setIsAddAdminOpen(false);
+                setNewAdminName('');
+                setNewAdminEmail('');
+                toast.success('Administrateur ajouté avec succès!', {
+                  description: `Le compte pour ${newAdminName} a été créé.`
+                });
+              }}
+              className="h-12 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg shadow-red-600/20 w-full sm:w-auto"
+            >
+              Ajouter l'Admin
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {/* ISOLATED SIDEBAR */}
       <aside className="w-72 bg-indigo-950 text-white flex flex-col sticky top-0 h-screen z-50 shadow-2xl">
         <div className="p-8 border-b border-indigo-900/50">
@@ -233,11 +323,7 @@ export default function PresidentDashboard() {
                     />
                   </div>
                   <Button className="h-14 px-8 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg shadow-red-600/20" onClick={() => {
-                    const name = prompt('Nom de l\'admin:');
-                    const email = prompt('Email de l\'admin:');
-                    if (name && email) {
-                      setUsers([{ id: Date.now(), name, email, role: 'admin', avatar: name.substring(0,2).toUpperCase(), status: 'active', grade: 'Administrateur', service: 'Administration' }, ...users]);
-                    }
+                    setIsAddAdminOpen(true);
                   }}>
                     <UserPlus className="h-5 w-5 mr-2" /> Nouvel Admin
                   </Button>

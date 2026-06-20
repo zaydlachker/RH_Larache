@@ -14,7 +14,7 @@ export const translations: Record<string, Record<string, string>> = {
     passwordPlaceholder: '••••••••',
     createAccount: 'Créer mon compte',
     loginButton: 'Se connecter',
-    demoCandidate: 'Connexion - Candidat',
+    demoCandidate: 'Connexion - priver',
     noAccount: "Pas de compte ? S'enregistrer",
     alreadyAccount: 'Déjà un compte ? Se connecter',
     accueil: 'Accueil',

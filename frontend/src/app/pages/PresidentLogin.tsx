@@ -57,7 +57,7 @@ export default function PresidentLogin() {
             <Label htmlFor="pres-email" className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email Officiel</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-              <Input id="pres-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="president@gmail.com" className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200" />
+              <Input id="pres-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="" className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200" />
             </div>
           </div>
 

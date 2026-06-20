@@ -73,6 +73,30 @@ class AuthController extends Controller
     }
 
     /**
+     * Update user password
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['Le mot de passe actuel est incorrect.'],
+            ]);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Mot de passe mis à jour avec succès.'], 200);
+    }
+
+    /**
      * Register new user
      */
     public function register(Request $request)
@@ -83,6 +107,13 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users',
             'password' => 'required|string|min:8',
+            'cin' => 'nullable|string',
+            'phone' => 'nullable|string',
+            'date_naissance' => 'nullable|date',
+            'lieu_naissance' => 'nullable|string',
+            'nationalite' => 'nullable|string',
+            'diplome' => 'nullable|string',
+            'etablissement' => 'nullable|string',
         ]);
 
         $user = \App\Models\User::create([
@@ -90,6 +121,13 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => $request->password,
             'role' => $request->role ?? 'candidat',
+            'cin' => $request->cin,
+            'phone' => $request->phone,
+            'date_naissance' => $request->date_naissance,
+            'lieu_naissance' => $request->lieu_naissance,
+            'nationalite' => $request->nationalite,
+            'diplome' => $request->diplome,
+            'etablissement' => $request->etablissement,
         ]);
 
         // Create notification for new user registration

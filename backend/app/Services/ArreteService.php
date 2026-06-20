@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\ActeAdministratif;
 use App\Models\Fonctionnaire;
 use App\Models\User;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -31,8 +30,17 @@ class ArreteService
                 throw new \Exception("Employé introuvable.");
             }
 
-            // 2. Prepare Reference
-            $reference = $input['reference'] ?? 'RH-' . strtoupper(Str::random(8));
+            // 2. Prepare Unique Reference
+            $baseReference = $input['reference'] ?? 'RH-' . strtoupper(Str::random(8));
+            $reference = $baseReference;
+            
+            // Explicitly check for uniqueness in acte_administratifs to avoid SQLSTATE[23000]
+            $count = 1;
+            while (ActeAdministratif::where('reference', $reference)->exists()) {
+                $reference = $baseReference . '-' . $count;
+                $count++;
+            }
+
             $decisionData = $input['data'] ?? [];
             
             // 3. Document Generation Logic
@@ -159,6 +167,8 @@ class ArreteService
             'date_formatted'  => $mappedData['date_formatted'],
         ];
 
+        // Use raw UTF-8 text only, relying on native PDF engine rendering
+
         // Strict Mapping as per Requirement
         $viewMap = [
             'recrutement'    => 'arretes.arrete_recrutement',
@@ -184,10 +194,14 @@ class ArreteService
         ]);
 
         try {
-            // Ensure UTF-8 and valid HTML structure is handled by DomPDF via options if needed
-            return Pdf::loadView($view, $viewData)->setPaper('a4', 'portrait');
+            $html = view($view, $viewData)->render();
+            return \Spatie\Browsershot\Browsershot::html($html)
+                ->format('A4')
+                ->margins(15, 20, 15, 20)
+                ->showBackground()
+                ->pdf();
         } catch (\Exception $e) {
-            Log::error("DomPDF Rendering Error for $type:", [
+            Log::error("Browsershot Rendering Error for $type:", [
                 'message' => $e->getMessage(),
                 'view' => $view,
                 'acte_id' => $acte->id
@@ -232,4 +246,5 @@ class ArreteService
 
         return $obj;
     }
+
 }

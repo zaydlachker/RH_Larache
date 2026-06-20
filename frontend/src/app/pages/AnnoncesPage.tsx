@@ -4,6 +4,7 @@ import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Calendar, Search, ChevronRight } from 'lucide-react';
 import { useTranslation } from '../i18n';
+import { Link } from 'react-router-dom';
 
 export default function AnnoncesPage() {
   const { t } = useTranslation();
@@ -111,10 +112,12 @@ export default function AnnoncesPage() {
                 </p>
               </CardContent>
               <CardFooter className="pt-4 border-t border-slate-50 dark:border-slate-800/50">
-                <Button variant="ghost" className="w-full justify-between hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-slate-600 dark:text-slate-300">
-                  Voir détails
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                <Link to={`${annonce.id}`} className="w-full">
+                  <Button variant="ghost" className="w-full justify-between hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-slate-600 dark:text-slate-300">
+                    Voir détails
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </Link>
               </CardFooter>
             </Card>
           ))}

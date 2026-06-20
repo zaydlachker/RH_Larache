@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ActeAdministratif;
 use App\Models\Candidat;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -131,18 +130,24 @@ class ActeAdministratifController extends Controller
         $reference = Str::upper($validated['type'] . '_' . $candidat->cin . '_' . time());
 
         // Generate PDF content
-        $pdf = PDF::loadView('pdf.certificat', [
+        $html = view('pdf.certificat', [
             'candidat' => $candidat,
             'title' => $validated['title'],
             'content' => $validated['content'],
             'reference' => $reference,
             'issue_date' => now(),
             'generator' => $request->user(),
-        ]);
+        ])->render();
+        
+        $pdfContent = \Spatie\Browsershot\Browsershot::html($html)
+            ->format('A4')
+            ->margins(15, 20, 15, 20)
+            ->showBackground()
+            ->pdf();
 
         // Save PDF to storage
         $filename = 'certificates/' . $reference . '.pdf';
-        Storage::put($filename, $pdf->output());
+        Storage::put($filename, $pdfContent);
 
         // Create acte administratif record
         $acte = ActeAdministratif::create([

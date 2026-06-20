@@ -65,10 +65,14 @@ class ArreteController extends Controller
             $result = $this->arreteService->createAndGenerate($type, $request->all(), $admin);
             
             $acte = $result['acte'];
-            $pdf = $result['pdf'];
+            $pdfContent = $result['pdf'];
             
             if (ob_get_length()) ob_end_clean();
-            return $pdf->stream("{$type}_{$acte->reference}.pdf");
+            
+            return response($pdfContent, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . "{$type}_{$acte->reference}.pdf" . '"',
+            ]);
         } catch (\Exception $e) {
             $errorDetail = [
                 'message' => $e->getMessage(),
@@ -117,7 +121,11 @@ class ArreteController extends Controller
 
             $result = $this->arreteService->createAndGenerate($type, $testData, $admin);
             if (ob_get_length()) ob_end_clean();
-            return $result['pdf']->stream("test_{$type}.pdf");
+            
+            return response($result['pdf'], 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . "test_{$type}.pdf" . '"',
+            ]);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -133,6 +141,10 @@ class ArreteController extends Controller
     public function download($id)
     {
         $acte = ActeAdministratif::findOrFail($id);
-        return $this->arreteService->generatePdf($acte)->download($acte->type . '_' . $acte->id . '.pdf');
+        $pdfContent = $this->arreteService->generatePdf($acte);
+        return response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $acte->type . '_' . $acte->id . '.pdf' . '"',
+        ]);
     }
 }

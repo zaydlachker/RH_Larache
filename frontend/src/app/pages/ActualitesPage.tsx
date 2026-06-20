@@ -4,6 +4,7 @@ import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Calendar, Search, ChevronRight, ArrowRight } from 'lucide-react';
 import { useTranslation } from '../i18n';
+import { Link } from 'react-router-dom';
 
 export default function ActualitesPage() {
   const { t } = useTranslation();
@@ -161,12 +162,12 @@ export default function ActualitesPage() {
                   <p className="text-slate-600 dark:text-slate-400 text-lg mb-8 line-clamp-3">
                     {featured.description}
                   </p>
-                  <div>
+                  <Link to={`${featured.id}`}>
                     <Button className="bg-slate-900 hover:bg-blue-600 text-white dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-blue-500 rounded-xl px-6 py-6 text-md font-medium transition-all shadow-md">
                       Lire l'article complet
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
-                  </div>
+                  </Link>
                 </div>
               </div>
             </Card>
@@ -210,10 +211,12 @@ export default function ActualitesPage() {
                       </p>
                     </CardContent>
                     <CardFooter className="pt-2 pb-5">
-                      <Button variant="ghost" className="p-0 h-auto font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-transparent group-hover:translate-x-1 transition-transform">
-                        Lire plus
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
+                      <Link to={`${actu.id}`}>
+                        <Button variant="ghost" className="p-0 h-auto font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-transparent group-hover:translate-x-1 transition-transform">
+                          Lire plus
+                          <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
+                      </Link>
                     </CardFooter>
                   </Card>
                 ))}

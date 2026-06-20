@@ -21,13 +21,16 @@ export default function FonctionnaireDashboard() {
   const [carriere, setCarriere] = useState<any[]>([]);
   const [documents, setDocuments] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
+  const hasFetched = React.useRef(false);
   
   // Theme & Language State
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [lang, setLang] = useState(localStorage.getItem('lang') || 'fr');
 
-  const userStr = localStorage.getItem('user');
-  const user = userStr ? JSON.parse(userStr) : null;
+  const user = React.useMemo(() => {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  }, []);
 
   useEffect(() => {
     // Apply Theme
@@ -93,6 +96,20 @@ export default function FonctionnaireDashboard() {
     return texts[lang][key] || key;
   };
 
+  // Modal & Form States
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [requestForm, setRequestForm] = useState({ title: '', description: '', type: 'attestation' });
+  const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error', visible: boolean }>({
+    message: '', type: 'success', visible: false
+  });
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type, visible: true });
+    setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
+  };
+
   useEffect(() => {
     if (!user || user.role !== 'fonctionnaire') {
       navigate('/login/fonctionnaire', { replace: true });
@@ -101,14 +118,12 @@ export default function FonctionnaireDashboard() {
 
     const fetchData = async () => {
       try {
-        // Fetch only my profile using the scoped endpoint
         const response = await api.get('/fonctionnaire/profile');
         const myProfile = response.data;
         
         if (myProfile) {
           setProfile(myProfile);
           
-          // Fetch arretes - note that the web route /arretes is used here as per ArreteController
           const arretesRes = await fetch('http://localhost:8000/arretes');
           const arretes = await arretesRes.json();
           const myArretes = arretes.filter((a: any) => a.fonctionnaire_id === myProfile.id);
@@ -133,14 +148,58 @@ export default function FonctionnaireDashboard() {
       }
     };
 
+    if (hasFetched.current) return;
+    hasFetched.current = true;
     fetchData();
 
     const stored = JSON.parse(localStorage.getItem('mes_actes') || '[]');
-    setDossiers(stored.length > 0 ? stored : [
-      { id: 1, title: 'Demande de congé annuel', status: 'validé', date: '2026-05-01', description: 'Congé pour la période estivale.' },
-      { id: 2, title: 'Attestation de travail', status: 'en cours', date: '2026-05-03', description: 'Pour dossier bancaire.' }
-    ]);
-  }, [user, navigate]);
+    setDossiers(stored);
+  }, []);
+
+  const handleNewRequest = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!requestForm.title || !requestForm.description) {
+      showToast('Veuillez remplir tous les champs', 'error');
+      return;
+    }
+
+    const newRequest = {
+      id: Date.now(),
+      title: requestForm.title,
+      description: requestForm.description,
+      type: requestForm.type,
+      status: 'en cours',
+      date: new Date().toLocaleDateString('fr-FR')
+    };
+
+    const updated = [newRequest, ...dossiers];
+    setDossiers(updated);
+    localStorage.setItem('mes_actes', JSON.stringify(updated));
+    setIsRequestModalOpen(false);
+    setRequestForm({ title: '', description: '', type: 'attestation' });
+    showToast('Votre demande a été soumise avec succès !');
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordForm.new !== passwordForm.confirm) {
+      showToast('Les mots de passe ne correspondent pas', 'error');
+      return;
+    }
+
+    try {
+      await api.patch('/v1/update-password', {
+        current_password: passwordForm.current,
+        new_password: passwordForm.new,
+        new_password_confirmation: passwordForm.confirm
+      });
+      showToast('Mot de passe mis à jour !');
+      setIsPasswordOpen(false);
+      setPasswordForm({ current: '', new: '', confirm: '' });
+    } catch (err: any) {
+      showToast(err.response?.data?.message || 'Erreur lors de la mise à jour', 'error');
+    }
+  };
 
   if (!user || user.role !== 'fonctionnaire') return null;
 
@@ -160,6 +219,123 @@ export default function FonctionnaireDashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#F0F5F9] dark:bg-slate-950 font-sans text-slate-900">
+      {/* Toast */}
+      {toast.visible && (
+        <div className={`fixed top-10 left-1/2 -translate-x-1/2 z-[100] px-6 py-4 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300 flex items-center gap-3 font-bold text-white ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`}>
+          {toast.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+          {toast.message}
+        </div>
+      )}
+
+      {/* Request Modal */}
+      {isRequestModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <Card className="w-full max-w-md border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+            <CardHeader className="p-10 bg-[#0F172A] text-white">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-2xl font-black">Nouvelle Demande</CardTitle>
+                <button onClick={() => setIsRequestModalOpen(false)} className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"><X className="h-5 w-5" /></button>
+              </div>
+            </CardHeader>
+            <form onSubmit={handleNewRequest}>
+              <CardContent className="p-10 space-y-6">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Type de demande</Label>
+                  <select 
+                    value={requestForm.type}
+                    onChange={e => setRequestForm({...requestForm, type: e.target.value})}
+                    className="w-full h-12 px-4 rounded-xl border border-slate-100 bg-slate-50 focus:ring-2 focus:ring-blue-600 outline-none text-sm font-medium"
+                  >
+                    <option value="attestation">Attestation de travail</option>
+                    <option value="conge">Demande de congé</option>
+                    <option value="mutation">Demande de mutation</option>
+                    <option value="autre">Autre demande</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Objet / Titre</Label>
+                  <Input 
+                    required 
+                    value={requestForm.title} 
+                    onChange={e => setRequestForm({...requestForm, title: e.target.value})}
+                    placeholder="Ex: Congé annuel..." 
+                    className="h-12 rounded-xl border-slate-100 focus:ring-blue-600" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Détails de la demande</Label>
+                  <textarea 
+                    required
+                    value={requestForm.description}
+                    onChange={e => setRequestForm({...requestForm, description: e.target.value})}
+                    placeholder="Précisez votre demande ici..."
+                    className="w-full h-32 p-4 rounded-xl border border-slate-100 bg-slate-50 focus:ring-2 focus:ring-blue-600 outline-none text-sm font-medium resize-none"
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="p-10 pt-0">
+                <Button type="submit" className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/20">
+                  <Send className="h-5 w-5 mr-3" /> Envoyer la demande
+                </Button>
+              </CardFooter>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {/* Password Modal */}
+      {isPasswordModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <Card className="w-full max-w-md border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+            <CardHeader className="p-10 bg-[#0F172A] text-white">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-2xl font-black">Modifier le mot de passe</CardTitle>
+                <button onClick={() => setIsPasswordModalOpen(false)} className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"><X className="h-5 w-5" /></button>
+              </div>
+            </CardHeader>
+            <form onSubmit={handleUpdatePassword}>
+              <CardContent className="p-10 space-y-6">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mot de passe actuel</Label>
+                  <Input 
+                    type="password" 
+                    required 
+                    value={passwordForm.current}
+                    onChange={e => setPasswordForm({...passwordForm, current: e.target.value})}
+                    className="h-12 rounded-xl border-slate-100 focus:ring-blue-600" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nouveau mot de passe</Label>
+                  <Input 
+                    type="password" 
+                    required 
+                    value={passwordForm.new}
+                    onChange={e => setPasswordForm({...passwordForm, new: e.target.value})}
+                    className="h-12 rounded-xl border-slate-100 focus:ring-blue-600" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Confirmer le mot de passe</Label>
+                  <Input 
+                    type="password" 
+                    required 
+                    value={passwordForm.confirm}
+                    onChange={e => setPasswordForm({...passwordForm, confirm: e.target.value})}
+                    className="h-12 rounded-xl border-slate-100 focus:ring-blue-600" 
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="p-10 pt-0">
+                <Button type="submit" className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/20">
+                  <CheckCircle className="h-5 w-5 mr-3" /> Mettre à jour
+                </Button>
+              </CardFooter>
+            </form>
+          </Card>
+        </div>
+      )}
+
       {/* SIDEBAR */}
       <aside className="w-72 bg-[#0F172A] text-white flex flex-col sticky top-0 h-screen z-20 shadow-2xl">
         <div className="p-8 border-b border-white/10 flex items-center gap-4">
@@ -309,7 +485,7 @@ export default function FonctionnaireDashboard() {
                     <h2 className="text-4xl font-black text-slate-900 tracking-tight">Mes Actes</h2>
                     <p className="text-slate-500 text-lg mt-1 font-medium">Historique de vos documents et demandes administratives.</p>
                   </div>
-                  <Button className="bg-blue-600 hover:bg-blue-700 rounded-2xl h-14 px-8 font-bold text-white shadow-lg shadow-blue-600/20">
+                  <Button onClick={() => setIsRequestModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 rounded-2xl h-14 px-8 font-bold text-white shadow-lg shadow-blue-600/20">
                     <Send className="h-5 w-5 mr-3" /> Nouvelle Demande
                   </Button>
                 </header>
@@ -472,7 +648,7 @@ export default function FonctionnaireDashboard() {
                   <Card className="border-none shadow-sm rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden">
                     <CardHeader className="p-10 border-b border-slate-50 dark:border-slate-800"><CardTitle className="text-xl font-black dark:text-white">{t('safety')}</CardTitle></CardHeader>
                     <CardContent className="p-10 space-y-6">
-                      <Button variant="outline" className="w-full justify-between rounded-[1.5rem] h-16 px-8 border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white font-bold">
+                      <Button onClick={() => setIsPasswordModalOpen(true)} variant="outline" className="w-full justify-between rounded-[1.5rem] h-16 px-8 border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white font-bold">
                         <div className="flex items-center gap-4"><Lock className="h-6 w-6 text-slate-400" /> Modifier le mot de passe</div>
                         <ArrowRight className="h-5 w-5 text-slate-300" />
                       </Button>

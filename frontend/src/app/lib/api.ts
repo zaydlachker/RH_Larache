@@ -87,6 +87,11 @@ export const authApi = {
     return response.data.user;
   },
 
+  registerStagiaire: async (data: any): Promise<User> => {
+    const response = await api.post<{ user: User; message?: string }>('/register', data);
+    return response.data.user;
+  },
+
   logout: async (): Promise<void> => {
     try {
       // Attempt to notify backend

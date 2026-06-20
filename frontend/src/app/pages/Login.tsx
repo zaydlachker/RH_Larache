@@ -308,9 +308,9 @@ export function Login() {
           <div className="space-y-3 mb-8">
             {!isAdminMode && (
               <Button
-                variant="outline"
-                className="w-full h-11 rounded-xl border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
-                onClick={() => handleDemoLogin()}
+                variant="default"
+                className="w-full h-11 rounded-xl bg-slate-500 hover:bg-slate-600 text-white font-bold transition-all shadow-lg shadow-slate-500/20"
+                onClick={() => navigate('/2')}
                 disabled={isLoading}
               >
                 {t('demoCandidate')}

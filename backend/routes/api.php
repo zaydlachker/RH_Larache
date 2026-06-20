@@ -17,6 +17,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
     Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
+    Route::patch('/update-password', [AuthController::class, 'updatePassword'])->middleware('auth:sanctum');
 
     // Concours Routes
     Route::get('concours', [ConcoursController::class, 'index'])->middleware('auth:sanctum');

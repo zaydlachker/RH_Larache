@@ -2,14 +2,22 @@
 <html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: DejaVu Sans, sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            margin: 20px;
-            direction: rtl;
-            color: #000;
+        @font-face {
+            font-family: 'Amiri';
+            font-style: normal;
+            font-weight: 400;
+            src: url(https://fonts.gstatic.com/s/amiri/v26/J7afpE9w7Ox9pTglKq7S.ttf) format('truetype');
+        }
+        body { 
+            font-family: 'DejaVu Sans', sans-serif; 
+            font-size: 14px; 
+            line-height: 1.6; 
+            margin: 20px; 
+            direction: rtl; 
+            text-align: right; 
+            color: #000; 
         }
         .header {
             width: 100%;

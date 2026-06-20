@@ -92,19 +92,83 @@ export default function StagiaireDashboard() {
     return texts[lang][key] || key;
   };
 
+  // Modal States
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+  
+  // Form States
+  const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
+  const [uploadForm, setUploadForm] = useState({ title: '', file: null as File | null });
+  
+  // Toast State
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; visible: boolean }>({
+    message: '',
+    type: 'success',
+    visible: false
+  });
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type, visible: true });
+    setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
+  };
+
   useEffect(() => {
     if (!user || user.role !== 'stagiaire') {
       navigate('/login/stagiaire', { replace: true });
       return;
     }
 
-    // Mock data for demonstration - in a real app, this would come from an API
-    // Profile should come from API in production
-    setProfile(null);
+    // Load Profile
+    const storedProfile = localStorage.getItem(`stagiaire_profile_${user.id}`);
+    let profileData: any = {};
+    if (storedProfile) {
+      profileData = JSON.parse(storedProfile);
+    }
 
-    setDocuments([]);
+    const defaultProfile = {
+      status: profileData.status || 'en cours',
+      encadrant: profileData.encadrant || 'Pr. Ahmed El Amrani',
+      service: profileData.service || 'Direction des Systèmes d\'Information',
+      start_date: profileData.start_date || '2026-03-01',
+      end_date: profileData.end_date || '2026-06-30',
+      cin: user.cin || profileData.cin || 'L543210',
+      phone: user.phone || profileData.phone || '06 12 34 56 78',
+      date_naissance: user.date_naissance || profileData.date_naissance || '2001-05-15',
+      lieu_naissance: user.lieu_naissance || profileData.lieu_naissance || 'Larache',
+      nationalite: user.nationalite || profileData.nationalite || 'Marocaine',
+      diplome: user.diplome || profileData.diplome || 'Licence en Génie Logiciel',
+      etablissement: user.etablissement || profileData.etablissement || 'Université Abdelmalek Essaâdi',
+    };
 
-    setStageTimeline([]);
+    setProfile(defaultProfile);
+    localStorage.setItem(`stagiaire_profile_${user.id}`, JSON.stringify(defaultProfile));
+
+    // Load Documents
+    const storedDocs = localStorage.getItem(`stagiaire_docs_${user.id}`);
+    if (storedDocs) {
+      setDocuments(JSON.parse(storedDocs));
+    } else {
+      const defaultDocs = [
+        { id: 1, title: 'Convention de Stage', reference: 'CV-2026-001', date: '2026-02-15', status: 'validé' },
+        { id: 2, title: 'Attestation d\'Assurance', reference: 'AS-2026-042', date: '2026-02-20', status: 'validé' },
+      ];
+      setDocuments(defaultDocs);
+      localStorage.setItem(`stagiaire_docs_${user.id}`, JSON.stringify(defaultDocs));
+    }
+
+    // Load Timeline
+    const storedTimeline = localStorage.getItem(`stagiaire_timeline_${user.id}`);
+    if (storedTimeline) {
+      setStageTimeline(JSON.parse(storedTimeline));
+    } else {
+      const defaultTimeline = [
+        { id: 1, title: 'Début du stage', description: 'Intégration au sein du service DSI et présentation de l\'équipe.', date: '2026-03-01' },
+        { id: 2, title: 'Validation du plan de travail', description: 'Le plan de travail pour le projet de gestion RH a été validé par l\'encadrant.', date: '2026-03-10' },
+        { id: 3, title: 'Mi-parcours', description: 'Évaluation positive des premières livrables.', date: '2026-04-15' },
+      ];
+      setStageTimeline(defaultTimeline);
+      localStorage.setItem(`stagiaire_timeline_${user.id}`, JSON.stringify(defaultTimeline));
+    }
   }, [user, navigate]);
 
   if (!user || user.role !== 'stagiaire') return null;
@@ -112,6 +176,51 @@ export default function StagiaireDashboard() {
   const handleLogout = async () => {
     await authApi.logout();
     navigate('/login/stagiaire', { replace: true });
+  };
+
+  const handleUpload = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadForm.title || !uploadForm.file) {
+      showToast('Veuillez remplir tous les champs', 'error');
+      return;
+    }
+
+    const newDoc = {
+      id: Date.now(),
+      title: uploadForm.title,
+      reference: 'UP-' + Math.floor(1000 + Math.random() * 9000),
+      date: new Date().toISOString().split('T')[0],
+      status: 'en cours'
+    };
+
+    const updatedDocs = [newDoc, ...documents];
+    setDocuments(updatedDocs);
+    localStorage.setItem(`stagiaire_docs_${user.id}`, JSON.stringify(updatedDocs));
+    
+    setIsUploadOpen(false);
+    setUploadForm({ title: '', file: null });
+    showToast('Document déposé avec succès !');
+  };
+
+  const handlePasswordChange = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passwordForm.current || !passwordForm.new || !passwordForm.confirm) {
+      showToast('Veuillez remplir tous les champs', 'error');
+      return;
+    }
+    if (passwordForm.new !== passwordForm.confirm) {
+      showToast('Les mots de passe ne correspondent pas', 'error');
+      return;
+    }
+    if (passwordForm.new.length < 8) {
+      showToast('Le mot de passe doit contenir au moins 8 caractères', 'error');
+      return;
+    }
+
+    // Simulating password change
+    showToast('Mot de passe modifié avec succès !');
+    setIsPasswordOpen(false);
+    setPasswordForm({ current: '', new: '', confirm: '' });
   };
 
   const getStatusBadge = (status: string) => {
@@ -125,6 +234,114 @@ export default function StagiaireDashboard() {
 
   return (
     <div className="flex min-h-screen bg-[#F0F5F9] dark:bg-slate-950 font-sans text-slate-900">
+      {/* Toast Notification */}
+      {toast.visible && (
+        <div className={`fixed top-10 left-1/2 -translate-x-1/2 z-[100] px-6 py-4 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300 flex items-center gap-3 font-bold text-white ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`}>
+          {toast.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+          {toast.message}
+        </div>
+      )}
+
+      {/* Upload Modal */}
+      {isUploadOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <Card className="w-full max-w-md border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+            <CardHeader className="p-10 bg-[#0F172A] text-white">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-2xl font-black">Déposer un document</CardTitle>
+                <button onClick={() => setIsUploadOpen(false)} className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"><X className="h-5 w-5" /></button>
+              </div>
+            </CardHeader>
+            <form onSubmit={handleUpload}>
+              <CardContent className="p-10 space-y-6">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Titre du document</Label>
+                  <Input 
+                    required 
+                    value={uploadForm.title} 
+                    onChange={e => setUploadForm({...uploadForm, title: e.target.value})}
+                    placeholder="Ex: Rapport de stage..." 
+                    className="h-12 rounded-xl border-slate-100 focus:ring-blue-600" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fichier (PDF, DOCX)</Label>
+                  <div className="border-2 border-dashed border-slate-100 rounded-2xl p-8 text-center hover:border-blue-600 transition-colors cursor-pointer relative">
+                    <input 
+                      type="file" 
+                      required
+                      className="absolute inset-0 opacity-0 cursor-pointer" 
+                      onChange={e => setUploadForm({...uploadForm, file: e.target.files?.[0] || null})}
+                    />
+                    <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 mx-auto mb-4"><Download className="h-6 w-6" /></div>
+                    <p className="text-sm font-bold text-slate-900">{uploadForm.file ? uploadForm.file.name : 'Cliquez pour sélectionner un fichier'}</p>
+                    <p className="text-xs text-slate-400 mt-1">Maximum 10MB</p>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="p-10 pt-0">
+                <Button type="submit" className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/20">
+                  <Send className="h-5 w-5 mr-3" /> Envoyer le document
+                </Button>
+              </CardFooter>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {/* Password Modal */}
+      {isPasswordOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <Card className="w-full max-w-md border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+            <CardHeader className="p-10 bg-[#0F172A] text-white">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-2xl font-black">Modifier le mot de passe</CardTitle>
+                <button onClick={() => setIsPasswordOpen(false)} className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"><X className="h-5 w-5" /></button>
+              </div>
+            </CardHeader>
+            <form onSubmit={handlePasswordChange}>
+              <CardContent className="p-10 space-y-6">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mot de passe actuel</Label>
+                  <Input 
+                    type="password" 
+                    required 
+                    value={passwordForm.current}
+                    onChange={e => setPasswordForm({...passwordForm, current: e.target.value})}
+                    className="h-12 rounded-xl border-slate-100 focus:ring-blue-600" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nouveau mot de passe</Label>
+                  <Input 
+                    type="password" 
+                    required 
+                    value={passwordForm.new}
+                    onChange={e => setPasswordForm({...passwordForm, new: e.target.value})}
+                    className="h-12 rounded-xl border-slate-100 focus:ring-blue-600" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Confirmer le mot de passe</Label>
+                  <Input 
+                    type="password" 
+                    required 
+                    value={passwordForm.confirm}
+                    onChange={e => setPasswordForm({...passwordForm, confirm: e.target.value})}
+                    className="h-12 rounded-xl border-slate-100 focus:ring-blue-600" 
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="p-10 pt-0">
+                <Button type="submit" className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-lg shadow-blue-600/20">
+                  <CheckCircle className="h-5 w-5 mr-3" /> Mettre à jour
+                </Button>
+              </CardFooter>
+            </form>
+          </Card>
+        </div>
+      )}
+
       {/* SIDEBAR */}
       <aside className="w-72 bg-[#0F172A] text-white flex flex-col sticky top-0 h-screen z-20 shadow-2xl">
         <div className="p-8 border-b border-white/10 flex items-center gap-4">
@@ -248,7 +465,7 @@ export default function StagiaireDashboard() {
                         <ProfileInfo label="LIEU DE NAISSANCE" value={profile?.lieu_naissance || '...'} />
                         <ProfileInfo label="NATIONALITÉ" value={profile?.nationalite || '...'} />
                         <ProfileInfo label="DIPLÔME" value={profile?.diplome || '...'} />
-                        <ProfileInfo label="ÉTABLISSEMENT" value="Université Abdelmalek Essaâdi" />
+                        <ProfileInfo label="ÉTABLISSEMENT" value={profile?.etablissement || 'Université Abdelmalek Essaâdi'} />
                       </CardContent>
                     </Card>
                   </div>
@@ -274,7 +491,7 @@ export default function StagiaireDashboard() {
                     <h2 className="text-4xl font-black text-slate-900 tracking-tight">Mes Documents</h2>
                     <p className="text-slate-500 text-lg mt-1 font-medium">Historique de vos conventions, attestations et rapports.</p>
                   </div>
-                  <Button className="bg-blue-600 hover:bg-blue-700 rounded-2xl h-14 px-8 font-bold text-white shadow-lg shadow-blue-600/20">
+                  <Button onClick={() => setIsUploadOpen(true)} className="bg-blue-600 hover:bg-blue-700 rounded-2xl h-14 px-8 font-bold text-white shadow-lg shadow-blue-600/20">
                     <Send className="h-5 w-5 mr-3" /> Déposer un document
                   </Button>
                 </header>
@@ -420,7 +637,7 @@ export default function StagiaireDashboard() {
                   <Card className="border-none shadow-sm rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden">
                     <CardHeader className="p-10 border-b border-slate-50 dark:border-slate-800"><CardTitle className="text-xl font-black dark:text-white">{t('safety')}</CardTitle></CardHeader>
                     <CardContent className="p-10 space-y-6">
-                      <Button variant="outline" className="w-full justify-between rounded-[1.5rem] h-16 px-8 border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white font-bold">
+                      <Button onClick={() => setIsPasswordOpen(true)} variant="outline" className="w-full justify-between rounded-[1.5rem] h-16 px-8 border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white font-bold">
                         <div className="flex items-center gap-4"><Lock className="h-6 w-6 text-slate-400" /> Modifier le mot de passe</div>
                         <ArrowRight className="h-5 w-5 text-slate-300" />
                       </Button>

@@ -841,7 +841,6 @@ export default function AdminDashboard() {
                           { label: 'Recrutement', value: 'recrutement' },
                           { label: 'Reclassement', value: 'reclassement' },
                           { label: 'Avancement', value: 'avancement' },
-                          { label: 'Nomination', value: 'nomination' },
                         ].map((t) => (
                           <Button
                             key={t.value}
